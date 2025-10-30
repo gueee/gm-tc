@@ -54,17 +54,69 @@ This CRM system is designed to streamline operations for GM-TC, a business speci
 
 ## Technology Stack
 
-_To be determined based on project requirements_
+### Backend
+- **FastAPI** - Modern Python web framework
+- **SQLAlchemy** - Database ORM
+- **PostgreSQL** - Production database (SQLite for development)
+- **Alembic** - Database migrations
+- **JWT** - Authentication
+- **Pydantic** - Data validation
+
+### Frontend (Coming Soon)
+- **React + TypeScript** - UI framework
+- **Shadcn/ui + TailwindCSS** - UI components
+- **TanStack Query** - State management
+- **Vite** - Build tool
+
+### Deployment
+- **Uberspace.de** - Hosting provider
+- **Nginx** - Reverse proxy
+- **Supervisord** - Process management
 
 ## Development Setup
 
-_Setup instructions will be added as the project develops_
+### Quick Start
+
+```bash
+# Backend
+cd backend
+source venv/bin/activate
+uvicorn main:app --reload
+
+# Visit http://localhost:8000/docs for API documentation
+```
+
+### Detailed Setup
+
+See [backend/README.md](backend/README.md) for complete backend setup instructions.
+
+## Project Documentation
+
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current status and progress
+- **[STRATEGY.md](STRATEGY.md)** - 14-week implementation plan
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Server deployment guide
+- **[CLAUDE.md](CLAUDE.md)** - Development guide for AI assistants
+
+## Current Status
+
+✅ **Phase 0 Complete** (90%):
+- Backend API framework
+- Authentication system
+- Database migrations
+- Development environment
+
+⏳ **Next Steps**:
+- Frontend setup
+- Parts management module
+- Supplier management module
 
 ## License
 
 _To be determined_
 
-## Contributing
+## Contact
 
-_Contributing guidelines will be added as needed_
+- **Email**: office@gm-tc.tech
+- **Repository**: https://github.com/gueee/gm-tc
+- **Domain**: https://gm-tc.tech
 
