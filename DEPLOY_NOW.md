@@ -96,17 +96,12 @@ uberspace web domain add www.gm-tc.tech
 supervisorctl reread
 supervisorctl update
 supervisorctl start gmtc-api
-
-# Check status
 supervisorctl status gmtc-api
 ```
 
 ### Step 4: Verify Deployment
 
 ```bash
-# Check if service is running
-supervisorctl status gmtc-api
-
 # View logs
 tail -f ~/logs/gmtc-api.log
 ```
