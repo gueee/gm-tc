@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.auth import router as auth_router
+from app.api.parts import router as parts_router
 
 # Create FastAPI application
 app = FastAPI(
@@ -48,6 +49,7 @@ def root():
 
 # Include routers
 app.include_router(auth_router, prefix=settings.API_PREFIX)
+app.include_router(parts_router, prefix=settings.API_PREFIX)
 
 
 if __name__ == "__main__":
