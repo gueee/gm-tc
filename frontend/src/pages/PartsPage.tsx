@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Package } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function PartsPage() {
   const { logout } = useAuth();
@@ -54,9 +55,17 @@ export function PartsPage() {
             <Package className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold">GM-TC CRM</h1>
           </div>
-          <Button onClick={logout} variant="outline">
-            Logout
-          </Button>
+          <div className="flex gap-4">
+            <Link to="/parts">
+              <Button variant="ghost">Parts</Button>
+            </Link>
+            <Link to="/suppliers">
+              <Button variant="ghost">Suppliers</Button>
+            </Link>
+            <Button onClick={logout} variant="outline">
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
