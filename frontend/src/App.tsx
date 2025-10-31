@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { PartsPage } from './pages/PartsPage';
 import { SuppliersPage } from './pages/SuppliersPage';
+import { CustomersPage } from './pages/CustomersPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +76,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SuppliersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customers"
+        element={
+          <ProtectedRoute>
+            <CustomersPage />
           </ProtectedRoute>
         }
       />

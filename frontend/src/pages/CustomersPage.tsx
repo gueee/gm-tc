@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { suppliersService } from '@/services/suppliers';
-import type { SupplierCreate } from '@/services/suppliers';
+import { customersService } from '@/services/customers';
+import type { CustomerCreate } from '@/services/customers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,23 +21,18 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Package, Building2 } from 'lucide-react';
+import { Plus, Package, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export function SuppliersPage() {
+export function CustomersPage() {
   const { logout } = useAuth();
   const [search, setSearch] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const { data: suppliersData, isLoading } = useQuery({
-    queryKey: ['suppliers', search],
-    queryFn: () => suppliersService.list({ search, per_page: 50 }),
+  const { data: customersData, isLoading } = useQuery({
+    queryKey: ['customers', search],
+    queryFn: () => customersService.list({ search, per_page: 50 }),
   });
-
-  const getRatingStars = (rating: number | null) => {
-    if (!rating) return '-';
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,16 +65,16 @@ export function SuppliersPage() {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  Suppliers Management
+                  <Users className="h-5 w-5" />
+                  Customers Management
                 </CardTitle>
                 <CardDescription>
-                  Manage your parts suppliers and vendor relationships
+                  Manage your customer database and relationships
                 </CardDescription>
               </div>
               <Button onClick={() => setShowAddForm(!showAddForm)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Supplier
+                Add Customer
               </Button>
             </div>
           </CardHeader>
@@ -87,58 +82,66 @@ export function SuppliersPage() {
             <div className="space-y-4">
               <div className="flex gap-4">
                 <Input
-                  placeholder="Search suppliers..."
+                  placeholder="Search customers..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="max-w-sm"
                 />
               </div>
 
-              {showAddForm && <AddSupplierForm onClose={() => setShowAddForm(false)} />}
+              {showAddForm && <AddCustomerForm onClose={() => setShowAddForm(false)} />}
 
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Loading suppliers...
+                  Loading customers...
                 </div>
-              ) : suppliersData?.items.length === 0 ? (
+              ) : customersData?.items.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No suppliers found. Add your first supplier to get started.
+                  No customers found. Add your first customer to get started.
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
+                      <TableHead>Company</TableHead>
                       <TableHead>Contact Person</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Location</TableHead>
-                      <TableHead>Rating</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {suppliersData?.items.map((supplier) => (
-                      <TableRow key={supplier.id}>
-                        <TableCell className="font-medium">{supplier.name}</TableCell>
-                        <TableCell>{supplier.contact_person || '-'}</TableCell>
-                        <TableCell>{supplier.email || '-'}</TableCell>
-                        <TableCell>{supplier.phone || '-'}</TableCell>
+                    {customersData?.items.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="font-medium">{customer.name}</TableCell>
+                        <TableCell>{customer.company_name || '-'}</TableCell>
+                        <TableCell>{customer.contact_person || '-'}</TableCell>
+                        <TableCell>{customer.email || '-'}</TableCell>
+                        <TableCell>{customer.phone || '-'}</TableCell>
                         <TableCell>
-                          {supplier.city && supplier.country
-                            ? `${supplier.city}, ${supplier.country}`
-                            : supplier.city || supplier.country || '-'}
+                          {customer.city && customer.country
+                            ? `${customer.city}, ${customer.country}`
+                            : customer.city || customer.country || '-'}
                         </TableCell>
-                        <TableCell>{getRatingStars(supplier.rating)}</TableCell>
+                        <TableCell>
+                          {customer.customer_type ? (
+                            <span className="capitalize">{customer.customer_type}</span>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
                         <TableCell>
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              supplier.is_active
+                              customer.is_active
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}
                           >
-                            {supplier.is_active ? 'Active' : 'Inactive'}
+                            {customer.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </TableCell>
                       </TableRow>
@@ -154,27 +157,29 @@ export function SuppliersPage() {
   );
 }
 
-function AddSupplierForm({ onClose }: { onClose: () => void }) {
+function AddCustomerForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<SupplierCreate>({
+  const [formData, setFormData] = useState<CustomerCreate>({
     name: '',
     contact_person: '',
     email: '',
     phone: '',
+    company_name: '',
+    tax_id: '',
     address_line1: '',
     city: '',
     state: '',
     postal_code: '',
     country: '',
     website: '',
-    rating: undefined,
+    customer_type: 'individual',
     is_active: true,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: SupplierCreate) => suppliersService.create(data),
+    mutationFn: (data: CustomerCreate) => customersService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       onClose();
     },
   });
@@ -187,18 +192,28 @@ function AddSupplierForm({ onClose }: { onClose: () => void }) {
   return (
     <Card className="border-primary">
       <CardHeader>
-        <CardTitle>Add New Supplier</CardTitle>
+        <CardTitle>Add New Customer</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Supplier Name *</Label>
+              <Label htmlFor="name">Customer Name *</Label>
               <Input
                 id="name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="company_name">Company Name</Label>
+              <Input
+                id="company_name"
+                value={formData.company_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, company_name: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -229,6 +244,21 @@ function AddSupplierForm({ onClose }: { onClose: () => void }) {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="customer_type">Type</Label>
+              <select
+                id="customer_type"
+                value={formData.customer_type}
+                onChange={(e) =>
+                  setFormData({ ...formData, customer_type: e.target.value })
+                }
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              >
+                <option value="individual">Individual</option>
+                <option value="business">Business</option>
+                <option value="reseller">Reseller</option>
+              </select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="city">City</Label>
               <Input
                 id="city"
@@ -244,37 +274,13 @@ function AddSupplierForm({ onClose }: { onClose: () => void }) {
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="rating">Rating (1-5)</Label>
-              <Input
-                id="rating"
-                type="number"
-                min="1"
-                max="5"
-                value={formData.rating || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    rating: e.target.value ? parseInt(e.target.value) : undefined,
-                  })
-                }
-              />
-            </div>
           </div>
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Creating...' : 'Create Supplier'}
+              {createMutation.isPending ? 'Creating...' : 'Create Customer'}
             </Button>
           </div>
         </form>

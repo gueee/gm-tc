@@ -62,6 +62,9 @@ export function PartsPage() {
             <Link to="/suppliers">
               <Button variant="ghost">Suppliers</Button>
             </Link>
+            <Link to="/customers">
+              <Button variant="ghost">Customers</Button>
+            </Link>
             <Button onClick={logout} variant="outline">
               Logout
             </Button>
