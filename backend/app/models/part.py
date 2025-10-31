@@ -1,7 +1,7 @@
 """Part model for inventory management."""
 
-from sqlalchemy import Column, String, Integer, Numeric, Text, DateTime
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, Integer, Numeric, Text, DateTime, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
 from app.db.base import Base
@@ -19,7 +19,7 @@ class Part(Base):
     category = Column(String(100), nullable=True, index=True)
 
     # Specifications stored as JSON for flexibility
-    specifications = Column(JSONB, nullable=True, default=dict)
+    specifications = Column(JSON, nullable=True, default=dict)
 
     # Inventory tracking
     current_stock = Column(Integer, default=0, nullable=False)
