@@ -140,7 +140,7 @@ export function PartsPage() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          {part.unit_price ? `$${part.unit_price}` : '-'}
+                          {part.unit_price ? `€${part.unit_price}` : '-'}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -221,7 +221,7 @@ function AddPartForm({ onClose }: { onClose: () => void }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit_price">Unit Price</Label>
+              <Label htmlFor="unit_price">Unit Price (€)</Label>
               <Input
                 id="unit_price"
                 type="number"
