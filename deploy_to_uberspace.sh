@@ -16,23 +16,24 @@ NC='\033[0m' # No Color
 
 # Step 1: Create directories
 echo -e "${YELLOW}Step 1: Creating directories...${NC}"
-mkdir -p ~/gmtc-crm ~/logs ~/backups
-cd ~/gmtc-crm
+mkdir -p ~/logs ~/backups
 
 # Step 2: Clone or pull repository
 echo -e "${YELLOW}Step 2: Getting latest code...${NC}"
-if [ ! -d ".git" ]; then
+if [ ! -d "~/gm-tc" ]; then
     echo "Cloning repository..."
+    cd ~
     # If repository is private, you'll need to authenticate
-    git clone https://github.com/gueee/gm-tc.git .
+    git clone https://github.com/gueee/gm-tc.git
 else
     echo "Updating existing repository..."
+    cd ~/gm-tc
     git pull origin main
 fi
 
 # Step 3: Set up Python virtual environment
 echo -e "${YELLOW}Step 3: Setting up Python environment...${NC}"
-cd backend
+cd ~/gm-tc/backend
 python3 -m venv venv
 source venv/bin/activate
 
@@ -101,8 +102,8 @@ echo -e "${YELLOW}Step 7: Setting up supervisord service...${NC}"
 mkdir -p ~/etc/services.d
 cat > ~/etc/services.d/gmtc-api.ini << 'EOF'
 [program:gmtc-api]
-directory=%(ENV_HOME)s/gmtc-crm/backend
-command=%(ENV_HOME)s/gmtc-crm/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+directory=%(ENV_HOME)s/gm-tc/backend
+command=%(ENV_HOME)s/gm-tc/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 autostart=yes
 autorestart=yes
 startsecs=30

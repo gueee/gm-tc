@@ -24,14 +24,14 @@ Copy and paste these commands one by one:
 
 ```bash
 # Create directories
-mkdir -p ~/gmtc-crm ~/logs ~/backups
+mkdir -p ~/logs ~/backups
 
 # Clone repository
 cd ~
-git clone https://github.com/gueee/gm-tc.git gmtc-crm
+git clone https://github.com/gueee/gm-tc.git
 
 # Set up Python environment
-cd gmtc-crm/backend
+cd gm-tc/backend
 python3 -m venv venv
 source venv/bin/activate
 
@@ -75,8 +75,8 @@ alembic upgrade head
 mkdir -p ~/etc/services.d
 cat > ~/etc/services.d/gmtc-api.ini << 'SERVICEEOF'
 [program:gmtc-api]
-directory=%(ENV_HOME)s/gmtc-crm/backend
-command=%(ENV_HOME)s/gmtc-crm/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+directory=%(ENV_HOME)s/gm-tc/backend
+command=%(ENV_HOME)s/gm-tc/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 autostart=yes
 autorestart=yes
 startsecs=30
@@ -129,7 +129,7 @@ Open in your browser:
 tail -n 50 ~/logs/gmtc-api-error.log
 
 # Manual test
-cd ~/gmtc-crm/backend
+cd ~/gm-tc/backend
 source venv/bin/activate
 uvicorn main:app --host 127.0.0.1 --port 8000
 # Press Ctrl+C to stop, then restart service
@@ -166,7 +166,7 @@ When you push new code to GitHub:
 
 ```bash
 ssh gmtc@gmtc.uber.space
-cd ~/gmtc-crm
+cd ~/gm-tc
 git pull origin main
 cd backend
 source venv/bin/activate
@@ -189,7 +189,7 @@ tail -f ~/logs/gmtc-api.log         # View application logs
 tail -f ~/logs/gmtc-api-error.log   # View error logs
 
 # Database
-cd ~/gmtc-crm/backend
+cd ~/gm-tc/backend
 source venv/bin/activate
 sqlite3 gmtc_crm.db              # Access database
 ```
