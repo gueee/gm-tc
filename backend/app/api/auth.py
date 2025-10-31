@@ -1,6 +1,7 @@
 """Authentication endpoints."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.core.security import verify_password, create_access_token, create_refresh_token, hash_password
@@ -50,12 +51,14 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(email: str, password: str, db: Session = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
     """Login user and return tokens.
 
     Args:
-        email: User email
-        password: User password
+        form_data: OAuth2 form with username (email) and password
         db: Database session
 
     Returns:
@@ -64,10 +67,10 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
     Raises:
         HTTPException: If credentials are invalid
     """
-    # Find user
-    user = db.query(User).filter(User.email == email).first()
+    # Find user (username field contains email)
+    user = db.query(User).filter(User.email == form_data.username).first()
 
-    if not user or not verify_password(password, user.hashed_password):
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
