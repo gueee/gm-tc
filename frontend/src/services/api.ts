@@ -21,14 +21,20 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle auth errors
+// Response interceptor - handle auth errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      window.location.href = '/login';
+      // Only redirect to login if we're on a protected route
+      const protectedRoutes = ['/blog/admin', '/admin'];
+      const currentPath = window.location.pathname;
+      
+      if (protectedRoutes.some(route => currentPath.startsWith(route))) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

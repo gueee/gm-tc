@@ -4,12 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.auth import router as auth_router
-from app.api.parts import router as parts_router
-from app.api.suppliers import router as suppliers_router
-from app.api.customers import router as customers_router
-from app.api.builds import router as builds_router
-from app.api.deliveries import router as deliveries_router
-from app.api.invoices import router as invoices_router
+from app.api.blog import router as blog_router
+from app.api.homepage import router as homepage_router
 
 # Create FastAPI application
 app = FastAPI(
@@ -54,12 +50,8 @@ def root():
 
 # Include routers
 app.include_router(auth_router, prefix=settings.API_PREFIX)
-app.include_router(parts_router, prefix=settings.API_PREFIX)
-app.include_router(suppliers_router, prefix=settings.API_PREFIX)
-app.include_router(customers_router, prefix=settings.API_PREFIX)
-app.include_router(builds_router, prefix=settings.API_PREFIX)
-app.include_router(deliveries_router, prefix=settings.API_PREFIX)
-app.include_router(invoices_router, prefix=settings.API_PREFIX)
+app.include_router(blog_router, prefix=settings.API_PREFIX)
+app.include_router(homepage_router, prefix=settings.API_PREFIX)
 
 
 if __name__ == "__main__":

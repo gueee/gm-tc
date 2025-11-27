@@ -1,11 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { PartsPage } from './pages/PartsPage';
-import { SuppliersPage } from './pages/SuppliersPage';
-import { CustomersPage } from './pages/CustomersPage';
+import { HomepageAdminPage } from './pages/HomepageAdminPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,78 +15,24 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-}
-
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  return !isAuthenticated ? <>{children}</> : <Navigate to="/parts" />;
-}
-
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
+      
+      {/* Auth routes */}
+      <Route path="/login" element={<LoginPage />} />
+      
+      {/* Protected admin routes */}
       <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <PublicRoute>
-            <RegisterPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/parts"
+        path="/admin"
         element={
           <ProtectedRoute>
-            <PartsPage />
+            <HomepageAdminPage />
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/suppliers"
-        element={
-          <ProtectedRoute>
-            <SuppliersPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/customers"
-        element={
-          <ProtectedRoute>
-            <CustomersPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/" element={<Navigate to="/parts" />} />
     </Routes>
   );
 }

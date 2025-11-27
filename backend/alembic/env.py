@@ -13,7 +13,10 @@ from app.core.config import settings
 from app.db.base import Base
 
 # Import all models here for Alembic to detect
+# Import all models for Alembic
 from app.models.user import User
+from app.models.blog import BlogPost
+from app.models.homepage import HomepageContent
 
 # Alembic Config object
 config = context.config
