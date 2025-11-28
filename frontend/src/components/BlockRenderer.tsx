@@ -168,6 +168,15 @@ function TextBlockView({ block }: { block: TextBlock }) {
 // Chart block - full-featured Plotly chart
 function ChartBlockView({ block }: { block: ChartBlock }) {
   const hasData = block.data && block.data.length > 0 && block.data[0]?.x?.length > 0
+  
+  // Debug logging
+  console.log('ChartBlockView render:', {
+    hasData,
+    dataLength: block.data?.length,
+    firstSeriesX: block.data?.[0]?.x?.length,
+    chartType: block.chartType,
+    title: block.title
+  })
 
   // Build traces
   const plotTraces = useMemo(() => {
