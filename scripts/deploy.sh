@@ -26,12 +26,16 @@ echo "============================================="
 # Navigate to repo
 cd "$REPO_DIR"
 
-# Pull latest changes
+# Pull latest changes (force reset to handle any local changes)
 echo ""
 echo "[1/5] Pulling latest code from GitHub..."
 git fetch origin
+
+# Reset any local changes - ensures clean state
+echo "      Resetting to origin/$BRANCH (discarding local changes)..."
 git checkout $BRANCH
-git pull origin $BRANCH
+git reset --hard origin/$BRANCH
+git clean -fd
 
 # Backend deployment
 echo ""
@@ -105,4 +109,7 @@ echo ""
 echo "Site: https://gm-tc.tech"
 echo "API:  https://gm-tc.tech/api/v1"
 echo ""
+
+
+
 

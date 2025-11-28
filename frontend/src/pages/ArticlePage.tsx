@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Calendar, Eye, Tag } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { getContentBySlug, BlogPost } from '../services/blog'
+import BlockRenderer from '../components/BlockRenderer'
 
-// Import embedded components
+// Import embedded components (legacy - for backwards compatibility)
 import ExtrusionAnalysisChart from '../components/charts/ExtrusionAnalysisChart'
 
-// Map of slug to embedded component
+// Map of slug to embedded component (legacy)
 const EMBEDDED_COMPONENTS: Record<string, React.FC> = {
   'gcode-extrusion-rate-analysis': ExtrusionAnalysisChart,
 }
@@ -47,8 +48,29 @@ export default function ArticlePage() {
     })
   }
 
-  // Check if this article has an embedded component
+  // Check if this article has an embedded component (legacy)
   const EmbeddedComponent = slug ? EMBEDDED_COMPONENTS[slug] : null
+
+  // Parse blocks from article data
+  const blocks = useMemo(() => {
+    if (!article?.blocks) return null
+    
+    // Handle array directly
+    if (Array.isArray(article.blocks)) {
+      return article.blocks.length > 0 ? article.blocks : null
+    }
+    
+    // Handle wrapped format: { blocks: [...] }
+    if (typeof article.blocks === 'object' && 'blocks' in article.blocks) {
+      const wrapped = article.blocks as { blocks: unknown[] }
+      return Array.isArray(wrapped.blocks) && wrapped.blocks.length > 0 ? wrapped.blocks : null
+    }
+    
+    return null
+  }, [article?.blocks])
+
+  // Determine what content to show
+  const hasBlocks = blocks && blocks.length > 0
 
   if (isLoading) {
     return (
@@ -126,10 +148,14 @@ export default function ArticlePage() {
 
         {/* Content */}
         <div className="prose prose-invert prose-copper max-w-none">
-          {/* If this article has an embedded component, render it */}
+          {/* Priority 1: Embedded component (legacy, for specific slugs) */}
           {EmbeddedComponent ? (
             <EmbeddedComponent />
+          ) : hasBlocks ? (
+            /* Priority 2: Block-based content */
+            <BlockRenderer blocks={blocks as any} />
           ) : article.content ? (
+            /* Priority 3: Markdown content */
             <ReactMarkdown
               components={{
                 h1: ({ children }) => (
