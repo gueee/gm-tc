@@ -23,23 +23,6 @@ interface ChartDataSeries {
   useSecondaryY?: boolean
 }
 
-interface ChartAnnotation {
-  x: number
-  y: number
-  text: string
-  showArrow?: boolean
-}
-
-interface ChartShape {
-  type: 'rect' | 'line'
-  x0: number
-  x1: number
-  y0: number
-  y1: number
-  color?: string
-  opacity?: number
-}
-
 interface ChartBlock extends BaseBlock {
   type: 'chart'
   title: string
@@ -53,9 +36,6 @@ interface ChartBlock extends BaseBlock {
   lineColor?: string
   xAxisType?: 'linear' | 'log' | 'date'
   yAxisType?: 'linear' | 'log'
-  trendline?: 'none' | 'linear' | 'moving-avg'
-  annotations?: ChartAnnotation[]
-  shapes?: ChartShape[]
 }
 
 interface ImageBlock extends BaseBlock {
@@ -77,40 +57,10 @@ interface BlockRendererProps {
   blocks: Block[]
 }
 
-/* TEMPORARILY COMMENTED OUT FOR DEBUGGING
 // Color palette
 const SERIES_COLORS = [
   '#D4A574', '#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'
 ]
-
-// Calculate linear regression
-function calculateLinearTrendline(x: number[], y: number[]): { x: number[], y: number[] } {
-  const n = x.length
-  if (n < 2) return { x: [], y: [] }
-  const sumX = x.reduce((a, b) => a + b, 0)
-  const sumY = y.reduce((a, b) => a + b, 0)
-  const sumXY = x.reduce((acc, xi, i) => acc + xi * y[i], 0)
-  const sumXX = x.reduce((acc, xi) => acc + xi * xi, 0)
-  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-  const intercept = (sumY - slope * sumX) / n
-  const minX = Math.min(...x)
-  const maxX = Math.max(...x)
-  return { x: [minX, maxX], y: [slope * minX + intercept, slope * maxX + intercept] }
-}
-
-// Calculate moving average
-function calculateMovingAverage(x: number[], y: number[], window = 10): { x: number[], y: number[] } {
-  if (y.length < window) return { x, y }
-  const avgX: number[] = []
-  const avgY: number[] = []
-  for (let i = window - 1; i < y.length; i++) {
-    const sum = y.slice(i - window + 1, i + 1).reduce((a, b) => a + b, 0)
-    avgX.push(x[i])
-    avgY.push(sum / window)
-  }
-  return { x: avgX, y: avgY }
-}
-*/
 
 // Main BlockRenderer component
 export default function BlockRenderer({ blocks }: BlockRendererProps) {
@@ -167,46 +117,125 @@ function TextBlockView({ block }: { block: TextBlock }) {
   )
 }
 
-// Chart block - full-featured Plotly chart
+// Chart block - renders Plotly chart
 function ChartBlockView({ block }: { block: ChartBlock }) {
   const hasData = block.data && block.data.length > 0 && block.data[0]?.x?.length > 0
-  
-  // Debug logging
-  console.log('ChartBlockView render:', {
-    hasData,
-    dataLength: block.data?.length,
-    firstSeriesX: block.data?.[0]?.x?.length,
-    chartType: block.chartType,
-    title: block.title
-  })
 
-  // Build traces - simplified for debugging
+  // Build traces
   const plotTraces = useMemo(() => {
     if (!hasData) return []
-    
-    // Simple trace - just line chart with minimal config
-    const series = block.data[0]
-    console.log('Building trace with', series.x.length, 'points')
-    
-    return [{
-      x: series.x,
-      y: series.y,
-      type: 'scatter' as const,
-      mode: 'lines' as const,
-      name: series.name || 'Data',
-      line: { color: '#D4A574', width: 2 }
-    }]
+    const traces: Plotly.Data[] = []
+
+    block.data.forEach((series, idx) => {
+      const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
+      let traceType: string = 'scatter'
+      let mode: string = 'lines'
+      let fill: string | undefined
+
+      switch (block.chartType) {
+        case 'scatter': 
+          mode = 'markers'
+          break
+        case 'line': 
+          mode = 'lines'
+          break
+        case 'area': 
+          mode = 'lines'
+          fill = 'tozeroy'
+          break
+        case 'bar': 
+          traceType = 'bar'
+          break
+        case 'histogram': 
+          traceType = 'histogram'
+          break
+        case 'box': 
+          traceType = 'box'
+          break
+        case 'pie': 
+          traceType = 'pie'
+          break
+      }
+
+      const trace: Plotly.Data = {
+        x: series.x,
+        y: series.y,
+        type: traceType as any,
+        mode: mode as any,
+        name: series.name || `Series ${idx + 1}`,
+        marker: { color, size: 6 },
+        line: { 
+          color, 
+          width: 2,
+          shape: block.smoothLine ? 'spline' : 'linear'
+        },
+        yaxis: series.useSecondaryY ? 'y2' : 'y',
+        hovertemplate: `<b>${series.name || 'Data'}</b><br>${block.xAxisLabel || 'X'}: %{x:.2f}<br>${block.yAxisLabel || 'Y'}: %{y:.2f}<extra></extra>`,
+      }
+
+      if (fill) {
+        (trace as any).fill = fill
+        ;(trace as any).fillcolor = color + '26' // Add 15% opacity
+      }
+
+      if (traceType === 'pie') {
+        (trace as any).labels = series.x.map((_, i) => `Item ${i + 1}`)
+        ;(trace as any).values = series.y
+      }
+
+      traces.push(trace)
+    })
+
+    return traces
   }, [block, hasData])
 
-  // Build layout - simplified for debugging
+  // Build layout
   const plotLayout = useMemo((): Partial<Plotly.Layout> => {
+    const hasSecondaryY = block.data?.some(s => s.useSecondaryY) || false
+    
     return {
-      paper_bgcolor: '#1a2332',
+      paper_bgcolor: 'transparent',
       plot_bgcolor: '#1a2332',
-      font: { color: '#a8b8c8' },
-      xaxis: { gridcolor: 'rgba(212, 165, 116, 0.1)' },
-      yaxis: { gridcolor: 'rgba(212, 165, 116, 0.1)' },
-      margin: { l: 50, r: 30, t: 20, b: 50 },
+      font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
+      xaxis: {
+        title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+        type: (block.xAxisType || 'linear') as any,
+        gridcolor: 'rgba(212, 165, 116, 0.1)',
+        zeroline: false,
+        showgrid: true,
+        tickfont: { color: '#8a9aaa', size: 11 },
+        showspikes: block.showSpikelines || false,
+        spikemode: 'across',
+        spikethickness: 1,
+        spikecolor: '#D4A574',
+      },
+      yaxis: {
+        title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+        type: (block.yAxisType || 'linear') as any,
+        gridcolor: 'rgba(212, 165, 116, 0.1)',
+        zeroline: false,
+        showgrid: true,
+        tickfont: { color: '#8a9aaa', size: 11 },
+        showspikes: block.showSpikelines || false,
+        spikemode: 'across',
+        spikethickness: 1,
+        spikecolor: '#D4A574',
+      },
+      yaxis2: hasSecondaryY ? {
+        title: { text: 'Secondary', font: { color: '#a8b8c8', size: 12 } },
+        overlaying: 'y',
+        side: 'right',
+        gridcolor: 'rgba(99, 102, 241, 0.1)',
+        zeroline: false,
+        showgrid: false,
+        tickfont: { color: '#8a9aaa', size: 11 },
+      } : undefined,
+      showlegend: block.showLegend || (block.data?.length || 0) > 1,
+      legend: { font: { color: '#a8b8c8' }, bgcolor: 'rgba(26, 35, 50, 0.8)' },
+      margin: { l: 60, r: hasSecondaryY ? 60 : 40, t: 20, b: 50 },
+      hovermode: 'x unified',
+      dragmode: 'zoom',
+      autosize: true,
       height: 400,
     }
   }, [block])
@@ -224,7 +253,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       {block.title && (
         <h3 className="text-xl font-semibold text-white mb-4">{block.title}</h3>
       )}
-      <div className="w-full h-[400px] md:h-[500px]">
+      <div className="w-full" style={{ height: '400px' }}>
         <Plot
           data={plotTraces}
           layout={plotLayout}
@@ -232,7 +261,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
             responsive: true,
             displayModeBar: true,
             displaylogo: false,
-            modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
+            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
             scrollZoom: true,
             doubleClick: 'reset',
           }}
@@ -241,7 +270,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         />
       </div>
       <div className="mt-4 pt-4 border-t border-steel-700 text-sm text-steel-400">
-        <span className="text-copper-400 font-medium">Tip:</span> Scroll to zoom, drag to pan. Use range slider for time navigation. Double-click to reset.
+        <span className="text-copper-400 font-medium">Tip:</span> Scroll to zoom, drag to pan. Double-click to reset view.
       </div>
     </div>
   )
