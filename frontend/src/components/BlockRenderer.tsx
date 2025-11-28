@@ -124,12 +124,12 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
   // Build traces for each data series
   const plotTraces = useMemo((): Plotly.Data[] => {
     if (!hasData) return []
-    
+
     return block.data.map((series, idx) => {
       const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
       const isScatter = block.chartType === 'scatter'
       const isArea = block.chartType === 'area'
-      
+
       const trace: Plotly.Data = {
         x: series.x,
         y: series.y,
@@ -137,8 +137,8 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         mode: isScatter ? 'markers' : 'lines',
         name: series.name || `Series ${idx + 1}`,
         marker: { color, size: 6 },
-        line: { 
-          color, 
+        line: {
+          color,
           width: 2,
           shape: block.smoothLine ? 'spline' : 'linear'
         },
@@ -147,13 +147,13 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
           `${block.xAxisLabel || 'X'}: %{x:.2f}<br>` +
           `${block.yAxisLabel || 'Y'}: %{y:.2f}<extra></extra>`,
       }
-      
+
       // Area fill
       if (isArea) {
         (trace as any).fill = 'tozeroy'
         ;(trace as any).fillcolor = color + '26'
       }
-      
+
       return trace
     })
   }, [block, hasData])
@@ -162,7 +162,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
   const plotLayout = useMemo((): Partial<Plotly.Layout> => {
     const hasSecondaryY = block.data?.some(s => s.useSecondaryY) || false
     const showSpikes = block.showSpikelines === true
-    
+
     const layout: Partial<Plotly.Layout> = {
       paper_bgcolor: '#1a2332',
       plot_bgcolor: '#1a2332',
@@ -171,15 +171,15 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       height: 400,
       autosize: true,
       showlegend: block.showLegend || (block.data?.length || 0) > 1,
-      legend: { 
-        font: { color: '#a8b8c8' }, 
+      legend: {
+        font: { color: '#a8b8c8' },
         bgcolor: 'rgba(26, 35, 50, 0.8)',
         x: 0.01,
         y: 0.99,
       },
       hovermode: 'x unified',
       dragmode: 'zoom',
-      
+
       // X-axis
       xaxis: {
         title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
@@ -192,7 +192,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         spikethickness: showSpikes ? 1 : undefined,
         spikecolor: showSpikes ? '#D4A574' : undefined,
       },
-      
+
       // Y-axis (primary)
       yaxis: {
         title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
@@ -206,7 +206,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         spikecolor: showSpikes ? '#D4A574' : undefined,
       },
     }
-    
+
     // Secondary Y-axis (only add if needed)
     if (hasSecondaryY) {
       layout.yaxis2 = {
@@ -218,7 +218,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         tickfont: { color: '#8a9aaa', size: 11 },
       }
     }
-    
+
     return layout
   }, [block])
 
