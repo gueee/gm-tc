@@ -49,24 +49,20 @@ pip install -q -r requirements.txt
 echo "      Running database migrations..."
 alembic upgrade head
 
-# Frontend build
+# Frontend - skip build on server (not enough memory)
+# Build locally and upload via: scp -r frontend/dist/* gmtc@gmtc.uber.space:/var/www/virtual/gmtc/html/
 echo ""
-echo "[3/5] Building frontend..."
-cd "$REPO_DIR/frontend"
-
-echo "      Installing npm dependencies..."
-npm ci --silent
-
-echo "      Building production bundle..."
-# Increase Node.js heap size to avoid OOM on Uberspace
-export NODE_OPTIONS="--max-old-space-size=1024"
-npm run build
-
-# Deploy frontend
+echo "[3/5] Frontend deployment..."
+echo "      NOTE: Build locally and upload dist folder manually (server has insufficient memory)"
+echo "      Run: cd frontend && npm run build && scp -r dist/* gmtc@gmtc.uber.space:/var/www/virtual/gmtc/html/"
 echo ""
-echo "[4/5] Deploying frontend to web root..."
-rm -rf "$WEB_ROOT"/*
-cp -r dist/* "$WEB_ROOT/"
+
+# Check if dist was uploaded
+if [ -d "$WEB_ROOT/assets" ]; then
+    echo "      Frontend assets found in web root - OK"
+else
+    echo "      WARNING: No frontend assets found! Upload dist folder manually."
+fi
 
 # Create .htaccess for SPA routing
 echo ""
