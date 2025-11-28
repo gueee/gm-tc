@@ -24,12 +24,12 @@ export default function ImpressumPage() {
               Website Information
             </h2>
             <p className="text-steel-300 mb-4">
-              This is a <strong className="text-copper-400">private, non-commercial website</strong> dedicated 
-              to sharing technical knowledge, experiments, and projects related to 3D printing, 
+              This is a <strong className="text-copper-400">private, non-commercial website</strong> dedicated
+              to sharing technical knowledge, experiments, and projects related to 3D printing,
               engineering, and technology.
             </p>
             <p className="text-steel-300">
-              All content on this website is provided for informational and educational purposes only. 
+              All content on this website is provided for informational and educational purposes only.
               No commercial transactions take place on this website.
             </p>
           </section>
@@ -57,8 +57,8 @@ export default function ImpressumPage() {
             <p className="text-steel-300 mb-4">
               For inquiries, feedback, or questions about the content on this website:
             </p>
-            <a 
-              href="mailto:info@gm-tc.tech" 
+            <a
+              href="mailto:info@gm-tc.tech"
               className="inline-flex items-center gap-2 px-4 py-2 bg-copper-400/10 text-copper-400 rounded-lg hover:bg-copper-400/20 transition-colors"
             >
               <Mail className="w-4 h-4" />
@@ -74,23 +74,23 @@ export default function ImpressumPage() {
               <div>
                 <h3 className="font-medium text-white mb-2">Content Accuracy</h3>
                 <p>
-                  While every effort is made to ensure the accuracy of the information presented, 
-                  no guarantee can be given. The content represents personal experiences, experiments, 
+                  While every effort is made to ensure the accuracy of the information presented,
+                  no guarantee can be given. The content represents personal experiences, experiments,
                   and opinions. Use any information at your own risk.
                 </p>
               </div>
               <div>
                 <h3 className="font-medium text-white mb-2">External Links</h3>
                 <p>
-                  This website may contain links to external websites. We have no control over the 
+                  This website may contain links to external websites. We have no control over the
                   content of these websites and cannot accept responsibility for their content.
                 </p>
               </div>
               <div>
                 <h3 className="font-medium text-white mb-2">Copyright</h3>
                 <p>
-                  Unless otherwise stated, all content on this website (text, images, charts, data) 
-                  is the intellectual property of the website owner. Reproduction or use requires 
+                  Unless otherwise stated, all content on this website (text, images, charts, data)
+                  is the intellectual property of the website owner. Reproduction or use requires
                   explicit permission.
                 </p>
               </div>
@@ -102,8 +102,8 @@ export default function ImpressumPage() {
               Privacy
             </h2>
             <p className="text-steel-300">
-              This website does not collect personal data beyond what is technically necessary 
-              for the operation of the website. No tracking cookies, analytics, or third-party 
+              This website does not collect personal data beyond what is technically necessary
+              for the operation of the website. No tracking cookies, analytics, or third-party
               services that collect user data are used.
             </p>
           </section>

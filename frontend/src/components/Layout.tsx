@@ -1,11 +1,9 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Menu, X, LogOut, Settings } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
 
 export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { isAuthenticated, user, logout } = useAuth()
   const location = useLocation()
 
   const navLinks = [
@@ -42,26 +40,6 @@ export default function Layout() {
                 </Link>
               ))}
 
-              {/* Admin controls - only show when authenticated, subtle icon */}
-              {isAuthenticated && (
-                <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-steel-700">
-                  <Link
-                    to="/admin"
-                    className="p-2 text-steel-500 hover:text-copper-400 transition-colors"
-                    title="Admin Panel"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Link>
-                  <span className="text-xs text-steel-600">{user?.email?.split('@')[0]}</span>
-                  <button
-                    onClick={logout}
-                    className="p-1.5 text-steel-500 hover:text-copper-400 transition-colors"
-                    title="Logout"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
             </nav>
 
             {/* Mobile menu button */}
@@ -92,26 +70,6 @@ export default function Layout() {
                   {link.label}
                 </Link>
               ))}
-              {isAuthenticated && (
-                <>
-                  <Link
-                    to="/admin"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block py-2 text-sm font-medium text-steel-500 hover:text-copper-400"
-                  >
-                    Admin
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout()
-                      setIsMenuOpen(false)
-                    }}
-                    className="block py-2 text-sm font-medium text-steel-500 hover:text-copper-400"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
             </nav>
           </div>
         )}
@@ -130,18 +88,18 @@ export default function Layout() {
             <div className="text-steel-500 text-sm">
               © {new Date().getFullYear()} GM-TC. Private technical blog.
             </div>
-            
+
             {/* Footer Links */}
             <div className="flex items-center gap-6 text-sm">
-              <Link 
-                to="/impressum" 
+              <Link
+                to="/impressum"
                 className="text-steel-500 hover:text-copper-400 transition-colors"
               >
                 Impressum
               </Link>
               {/* Hidden login link - only visible to those who know */}
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-steel-700 hover:text-steel-500 transition-colors text-xs"
                 title="Admin access"
               >

@@ -44,7 +44,7 @@ export default function HeroSection() {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="text-center">
           {/* Badges */}
           <div className="flex flex-wrap justify-center gap-3 mb-8 animate-fade-in">
@@ -75,22 +75,6 @@ export default function HeroSection() {
           <p className="text-lg text-copper-400 font-medium animate-fade-in delay-400">
             {hero.subtitle}
           </p>
-
-          {/* CTA Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in delay-400">
-            <a
-              href="#interests"
-              className="px-8 py-3 bg-copper-400 text-steel-900 font-semibold rounded-lg hover:bg-copper-300 transition-colors"
-            >
-              Explore Interests
-            </a>
-            <a
-              href="/articles"
-              className="px-8 py-3 border border-steel-600 text-steel-300 font-semibold rounded-lg hover:border-copper-400 hover:text-copper-400 transition-colors"
-            >
-              Read Articles
-            </a>
-          </div>
         </div>
       </div>
     </section>
