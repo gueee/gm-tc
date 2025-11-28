@@ -77,6 +77,7 @@ interface BlockRendererProps {
   blocks: Block[]
 }
 
+/* TEMPORARILY COMMENTED OUT FOR DEBUGGING
 // Color palette
 const SERIES_COLORS = [
   '#D4A574', '#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'
@@ -109,6 +110,7 @@ function calculateMovingAverage(x: number[], y: number[], window = 10): { x: num
   }
   return { x: avgX, y: avgY }
 }
+*/
 
 // Main BlockRenderer component
 export default function BlockRenderer({ blocks }: BlockRendererProps) {
@@ -178,141 +180,34 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
     title: block.title
   })
 
-  // Build traces
+  // Build traces - simplified for debugging
   const plotTraces = useMemo(() => {
     if (!hasData) return []
-    const traces: Plotly.Data[] = []
-
-    block.data.forEach((series, idx) => {
-      const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
-      let traceType: string = 'scatter'
-      let mode: string = 'lines'
-      let fill: string | undefined
-
-      switch (block.chartType) {
-        case 'scatter': mode = 'markers'; break
-        case 'line': case 'area': mode = 'lines'; fill = 'tozeroy'; break
-        case 'bar': traceType = 'bar'; break
-        case 'histogram': traceType = 'histogram'; break
-        case 'box': traceType = 'box'; break
-        case 'pie': traceType = 'pie'; break
-      }
-
-      const trace: any = {
-        x: series.x,
-        y: series.y,
-        type: traceType,
-        mode: mode,
-        name: series.name || `Series ${idx + 1}`,
-        marker: { color, size: 6 },
-        line: { color, width: 2, shape: block.smoothLine ? 'spline' : 'linear' },
-        yaxis: series.useSecondaryY ? 'y2' : 'y',
-        hovertemplate: `<b>${series.name || 'Data'}</b><br>${block.xAxisLabel || 'X'}: %{x}<br>${block.yAxisLabel || 'Y'}: %{y}<extra></extra>`,
-      }
-
-      if (fill && block.chartType !== 'scatter') {
-        trace.fill = fill
-        trace.fillcolor = `${color}26` // ~15% opacity
-      }
-
-      if (traceType === 'pie') {
-        trace.labels = series.x.map((_, i) => `Item ${i + 1}`)
-        trace.values = series.y
-      }
-
-      traces.push(trace)
-
-      // Trendlines
-      if (block.trendline === 'linear' && traceType === 'scatter') {
-        const trend = calculateLinearTrendline(series.x, series.y)
-        traces.push({
-          x: trend.x, y: trend.y, type: 'scatter', mode: 'lines',
-          name: `${series.name} (trend)`,
-          line: { color, width: 2, dash: 'dash' },
-          hoverinfo: 'skip',
-        })
-      } else if (block.trendline === 'moving-avg' && traceType === 'scatter') {
-        const avg = calculateMovingAverage(series.x, series.y, Math.max(10, Math.floor(series.x.length / 50)))
-        traces.push({
-          x: avg.x, y: avg.y, type: 'scatter', mode: 'lines',
-          name: `${series.name} (avg)`,
-          line: { color, width: 2, dash: 'dot' },
-          hoverinfo: 'skip',
-        })
-      }
-    })
-
-    return traces
+    
+    // Simple trace - just line chart with minimal config
+    const series = block.data[0]
+    console.log('Building trace with', series.x.length, 'points')
+    
+    return [{
+      x: series.x,
+      y: series.y,
+      type: 'scatter' as const,
+      mode: 'lines' as const,
+      name: series.name || 'Data',
+      line: { color: '#D4A574', width: 2 }
+    }]
   }, [block, hasData])
 
-  // Build layout
+  // Build layout - simplified for debugging
   const plotLayout = useMemo((): Partial<Plotly.Layout> => {
-    const hasSecondaryY = block.data.some(s => s.useSecondaryY)
     return {
-      title: undefined,
-      paper_bgcolor: 'transparent',
+      paper_bgcolor: '#1a2332',
       plot_bgcolor: '#1a2332',
-      font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
-      xaxis: {
-        title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
-        type: block.xAxisType || 'linear',
-        gridcolor: 'rgba(212, 165, 116, 0.1)',
-        zeroline: false,
-        showgrid: true,
-        tickfont: { color: '#8a9aaa', size: 11 },
-        showspikes: block.showSpikelines,
-        spikemode: 'across',
-        spikethickness: 1,
-        spikecolor: '#D4A574',
-        rangeslider: { visible: true, bgcolor: '#1a2332', bordercolor: '#374151', thickness: 0.08 },
-      },
-      yaxis: {
-        title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
-        type: block.yAxisType || 'linear',
-        gridcolor: 'rgba(212, 165, 116, 0.1)',
-        zeroline: false,
-        showgrid: true,
-        tickfont: { color: '#8a9aaa', size: 11 },
-        showspikes: block.showSpikelines,
-        spikemode: 'across',
-        spikethickness: 1,
-        spikecolor: '#D4A574',
-      },
-      yaxis2: hasSecondaryY ? {
-        title: { text: 'Secondary', font: { color: '#a8b8c8', size: 12 } },
-        overlaying: 'y',
-        side: 'right',
-        type: block.yAxisType || 'linear',
-        gridcolor: 'rgba(99, 102, 241, 0.1)',
-        zeroline: false,
-        showgrid: false,
-        tickfont: { color: '#8a9aaa', size: 11 },
-      } : undefined,
-      showlegend: block.showLegend || block.data.length > 1,
-      legend: { font: { color: '#a8b8c8' }, bgcolor: 'rgba(26, 35, 50, 0.8)' },
-      margin: { l: 60, r: hasSecondaryY ? 60 : 40, t: 20, b: 80 },
-      hovermode: 'x unified',
-      dragmode: 'zoom',
-      autosize: true,
-      height: 450,
-      annotations: (block.annotations || []).map(a => ({
-        x: a.x, y: a.y, text: a.text,
-        showarrow: a.showArrow,
-        arrowhead: 2,
-        arrowcolor: '#D4A574',
-        font: { color: '#fff', size: 12 },
-        bgcolor: 'rgba(26, 35, 50, 0.9)',
-        bordercolor: '#D4A574',
-        borderwidth: 1,
-        borderpad: 4,
-      })),
-      shapes: (block.shapes || []).map(s => ({
-        type: s.type,
-        x0: s.x0, x1: s.x1, y0: s.y0, y1: s.y1,
-        fillcolor: s.color || '#D4A574',
-        opacity: s.opacity || 0.2,
-        line: { width: 0 },
-      })),
+      font: { color: '#a8b8c8' },
+      xaxis: { gridcolor: 'rgba(212, 165, 116, 0.1)' },
+      yaxis: { gridcolor: 'rgba(212, 165, 116, 0.1)' },
+      margin: { l: 50, r: 30, t: 20, b: 50 },
+      height: 400,
     }
   }, [block])
 
