@@ -111,6 +111,44 @@ git push origin main
 # On Uberspace: pull changes (see uberspace-deployment skill)
 ```
 
+## Authentication Troubleshooting
+
+### HTTPS vs SSH Push Issues
+
+**Problem**: `git push` with HTTPS remote times out or hangs waiting for credentials.
+
+**Solution 1**: Use SSH remote (preferred)
+```bash
+# Switch to SSH
+git remote set-url origin git@github.com:gueee/gm-tc.git
+
+# Requires SSH key added to GitHub account
+```
+
+**Solution 2**: Use Personal Access Token (if SSH key not set up)
+```bash
+# Create PAT on GitHub: Settings > Developer Settings > Personal Access Tokens
+# Use it as password when prompted, or embed in URL (temporary):
+git push https://<TOKEN>@github.com/gueee/gm-tc.git HEAD:main
+
+# IMPORTANT: Remove token from git config after use for security
+```
+
+**Solution 3**: Configure credential helper
+```bash
+# Cache credentials for 1 hour
+git config --global credential.helper 'cache --timeout=3600'
+```
+
+### SSH Key Not Authorized
+
+**Problem**: `Permission denied (publickey)` when using SSH remote.
+
+**Fix**: Add local machine's SSH public key to GitHub:
+1. Copy public key: `cat ~/.ssh/id_ed25519.pub` (or `id_rsa.pub`)
+2. GitHub > Settings > SSH and GPG keys > New SSH key
+3. Paste key and save
+
 ## Useful Commands
 
 ```bash
