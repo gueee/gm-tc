@@ -10,7 +10,6 @@ export default function Layout() {
 
   const navLinks = [
     { to: '/', label: 'Home' },
-    { to: '/articles', label: 'Articles' },
   ]
 
   const isActive = (path: string) => location.pathname === path

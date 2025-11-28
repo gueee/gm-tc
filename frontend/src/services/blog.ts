@@ -63,6 +63,11 @@ export async function getContentBySlug(slug: string): Promise<BlogPost> {
   return response.data
 }
 
+export async function getContentById(id: number): Promise<BlogPost> {
+  const response = await api.get<BlogPost>(`/content/by-id/${id}`)
+  return response.data
+}
+
 export async function getCategories(activeOnly = true): Promise<Category[]> {
   const response = await api.get<Category[]>('/categories', {
     params: { active_only: activeOnly },
@@ -88,4 +93,19 @@ export async function updateContent(id: number, data: Partial<BlogPost>): Promis
 
 export async function deleteContent(id: number): Promise<void> {
   await api.delete(`/content/admin/${id}`)
+}
+
+// Category admin functions
+export async function createCategory(data: Partial<Category>): Promise<Category> {
+  const response = await api.post<Category>('/categories/admin', data)
+  return response.data
+}
+
+export async function updateCategory(id: number, data: Partial<Category>): Promise<Category> {
+  const response = await api.put<Category>(`/categories/admin/${id}`, data)
+  return response.data
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  await api.delete(`/categories/admin/${id}`)
 }

@@ -1,11 +1,10 @@
-import { HeroSection, InterestsShowcase, LatestArticles } from '../components/HomePage'
+import { HeroSection, CategoryNavigation } from '../components/HomePage'
 
 export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <InterestsShowcase />
-      <LatestArticles />
+      <CategoryNavigation />
     </>
   )
 }

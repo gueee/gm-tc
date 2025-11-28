@@ -133,6 +133,26 @@ async def get_category_by_slug(
 # ADMIN CONTENT ENDPOINTS (Require Authentication)
 # =============================================================================
 
+@router.get("/content/by-id/{content_id}", response_model=ContentResponse)
+async def get_content_by_id(
+    content_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Admin: Get content by ID (includes drafts).
+    """
+    content = db.query(Content).filter(Content.id == content_id).first()
+
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content not found"
+        )
+
+    return content
+
+
 @router.get("/content/admin/list", response_model=ContentListResponse)
 async def admin_list_content(
     page: int = Query(1, ge=1),
