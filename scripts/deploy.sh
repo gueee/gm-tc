@@ -58,6 +58,8 @@ echo "      Installing npm dependencies..."
 npm ci --silent
 
 echo "      Building production bundle..."
+# Increase Node.js heap size to avoid OOM on Uberspace
+export NODE_OPTIONS="--max-old-space-size=1024"
 npm run build
 
 # Deploy frontend
