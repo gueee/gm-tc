@@ -37,6 +37,14 @@ function createEmptyBlock(type: BlockType): Block {
         xAxisLabel: '',
         yAxisLabel: '',
         showLegend: false,
+        showSpikelines: true,
+        smoothLine: false,
+        lineColor: '#D4A574',
+        xAxisType: 'linear',
+        yAxisType: 'linear',
+        trendline: 'none',
+        annotations: [],
+        shapes: [],
       } as ChartBlock
     case 'image':
       return { id, type: 'image', url: '', alt: '', caption: '' } as ImageBlock

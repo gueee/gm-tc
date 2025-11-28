@@ -1,7 +1,8 @@
+import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import Plot from 'react-plotly.js'
 
-// Block types (duplicated to avoid circular dependency with admin blocks)
+// Block types (matching admin blocks types)
 type BlockType = 'text' | 'chart' | 'image' | 'code'
 
 interface BaseBlock {
@@ -14,18 +15,47 @@ interface TextBlock extends BaseBlock {
   content: string
 }
 
+interface ChartDataSeries {
+  x: number[]
+  y: number[]
+  name?: string
+  color?: string
+  useSecondaryY?: boolean
+}
+
+interface ChartAnnotation {
+  x: number
+  y: number
+  text: string
+  showArrow?: boolean
+}
+
+interface ChartShape {
+  type: 'rect' | 'line'
+  x0: number
+  x1: number
+  y0: number
+  y1: number
+  color?: string
+  opacity?: number
+}
+
 interface ChartBlock extends BaseBlock {
   type: 'chart'
   title: string
-  chartType: 'scatter' | 'line' | 'bar'
-  data: {
-    x: number[]
-    y: number[]
-    name?: string
-  }[]
+  chartType: 'scatter' | 'line' | 'bar' | 'area' | 'histogram' | 'pie' | 'box'
+  data: ChartDataSeries[]
   xAxisLabel?: string
   yAxisLabel?: string
   showLegend?: boolean
+  showSpikelines?: boolean
+  smoothLine?: boolean
+  lineColor?: string
+  xAxisType?: 'linear' | 'log' | 'date'
+  yAxisType?: 'linear' | 'log'
+  trendline?: 'none' | 'linear' | 'moving-avg'
+  annotations?: ChartAnnotation[]
+  shapes?: ChartShape[]
 }
 
 interface ImageBlock extends BaseBlock {
@@ -47,17 +77,45 @@ interface BlockRendererProps {
   blocks: Block[]
 }
 
+// Color palette
+const SERIES_COLORS = [
+  '#D4A574', '#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'
+]
+
+// Calculate linear regression
+function calculateLinearTrendline(x: number[], y: number[]): { x: number[], y: number[] } {
+  const n = x.length
+  if (n < 2) return { x: [], y: [] }
+  const sumX = x.reduce((a, b) => a + b, 0)
+  const sumY = y.reduce((a, b) => a + b, 0)
+  const sumXY = x.reduce((acc, xi, i) => acc + xi * y[i], 0)
+  const sumXX = x.reduce((acc, xi) => acc + xi * xi, 0)
+  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
+  const intercept = (sumY - slope * sumX) / n
+  const minX = Math.min(...x)
+  const maxX = Math.max(...x)
+  return { x: [minX, maxX], y: [slope * minX + intercept, slope * maxX + intercept] }
+}
+
+// Calculate moving average
+function calculateMovingAverage(x: number[], y: number[], window = 10): { x: number[], y: number[] } {
+  if (y.length < window) return { x, y }
+  const avgX: number[] = []
+  const avgY: number[] = []
+  for (let i = window - 1; i < y.length; i++) {
+    const sum = y.slice(i - window + 1, i + 1).reduce((a, b) => a + b, 0)
+    avgX.push(x[i])
+    avgY.push(sum / window)
+  }
+  return { x: avgX, y: avgY }
+}
+
 // Main BlockRenderer component
 export default function BlockRenderer({ blocks }: BlockRendererProps) {
-  if (!blocks || blocks.length === 0) {
-    return null
-  }
-
+  if (!blocks || blocks.length === 0) return null
   return (
     <div className="space-y-8">
-      {blocks.map((block) => (
-        <RenderBlock key={block.id} block={block} />
-      ))}
+      {blocks.map((block) => <RenderBlock key={block.id} block={block} />)}
     </div>
   )
 }
@@ -65,77 +123,40 @@ export default function BlockRenderer({ blocks }: BlockRendererProps) {
 // Individual block renderer
 function RenderBlock({ block }: { block: Block }) {
   switch (block.type) {
-    case 'text':
-      return <TextBlockView block={block} />
-    case 'chart':
-      return <ChartBlockView block={block} />
-    case 'image':
-      return <ImageBlockView block={block} />
-    case 'code':
-      return <CodeBlockView block={block} />
-    default:
-      return null
+    case 'text': return <TextBlockView block={block} />
+    case 'chart': return <ChartBlockView block={block} />
+    case 'image': return <ImageBlockView block={block} />
+    case 'code': return <CodeBlockView block={block} />
+    default: return null
   }
 }
 
 // Text block - renders markdown
 function TextBlockView({ block }: { block: TextBlock }) {
   if (!block.content) return null
-
   return (
     <div className="prose prose-invert prose-copper max-w-none">
       <ReactMarkdown
         components={{
-          h1: ({ children }) => (
-            <h1 className="text-3xl font-bold text-white mt-10 mb-4">{children}</h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="text-2xl font-bold text-white mt-8 mb-4">{children}</h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="text-xl font-semibold text-white mt-6 mb-3">{children}</h3>
-          ),
-          p: ({ children }) => (
-            <p className="text-steel-300 mb-4 leading-relaxed">{children}</p>
-          ),
+          h1: ({ children }) => <h1 className="text-3xl font-bold text-white mt-10 mb-4">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-2xl font-bold text-white mt-8 mb-4">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-xl font-semibold text-white mt-6 mb-3">{children}</h3>,
+          p: ({ children }) => <p className="text-steel-300 mb-4 leading-relaxed">{children}</p>,
           a: ({ href, children }) => (
-            <a
-              href={href}
-              className="text-copper-400 hover:text-copper-300 underline"
+            <a href={href} className="text-copper-400 hover:text-copper-300 underline"
               target={href?.startsWith('http') ? '_blank' : undefined}
-              rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
-            >
-              {children}
-            </a>
+              rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}>{children}</a>
           ),
-          ul: ({ children }) => (
-            <ul className="list-disc list-inside text-steel-300 mb-4 space-y-2">{children}</ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="list-decimal list-inside text-steel-300 mb-4 space-y-2">{children}</ol>
-          ),
+          ul: ({ children }) => <ul className="list-disc list-inside text-steel-300 mb-4 space-y-2">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal list-inside text-steel-300 mb-4 space-y-2">{children}</ol>,
           code: ({ className, children }) => {
             const isInline = !className
-            return isInline ? (
-              <code className="px-1.5 py-0.5 bg-steel-800 text-copper-400 rounded text-sm">
-                {children}
-              </code>
-            ) : (
-              <code className="block p-4 bg-steel-800 rounded-lg overflow-x-auto text-sm">
-                {children}
-              </code>
-            )
+            return isInline
+              ? <code className="px-1.5 py-0.5 bg-steel-800 text-copper-400 rounded text-sm">{children}</code>
+              : <code className="block p-4 bg-steel-800 rounded-lg overflow-x-auto text-sm">{children}</code>
           },
-          pre: ({ children }) => (
-            <pre className="bg-steel-800 rounded-lg p-4 overflow-x-auto mb-4">
-              {children}
-            </pre>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-copper-400 pl-4 italic text-steel-400 my-4">
-              {children}
-            </blockquote>
-          ),
+          pre: ({ children }) => <pre className="bg-steel-800 rounded-lg p-4 overflow-x-auto mb-4">{children}</pre>,
+          blockquote: ({ children }) => <blockquote className="border-l-4 border-copper-400 pl-4 italic text-steel-400 my-4">{children}</blockquote>,
         }}
       >
         {block.content}
@@ -144,9 +165,146 @@ function TextBlockView({ block }: { block: TextBlock }) {
   )
 }
 
-// Chart block - renders Plotly chart
+// Chart block - full-featured Plotly chart
 function ChartBlockView({ block }: { block: ChartBlock }) {
-  const hasData = block.data && block.data.length > 0 && block.data[0].x?.length > 0
+  const hasData = block.data && block.data.length > 0 && block.data[0]?.x?.length > 0
+
+  // Build traces
+  const plotTraces = useMemo(() => {
+    if (!hasData) return []
+    const traces: Plotly.Data[] = []
+
+    block.data.forEach((series, idx) => {
+      const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
+      let traceType: string = 'scatter'
+      let mode: string = 'lines'
+      let fill: string | undefined
+
+      switch (block.chartType) {
+        case 'scatter': mode = 'markers'; break
+        case 'line': case 'area': mode = 'lines'; fill = 'tozeroy'; break
+        case 'bar': traceType = 'bar'; break
+        case 'histogram': traceType = 'histogram'; break
+        case 'box': traceType = 'box'; break
+        case 'pie': traceType = 'pie'; break
+      }
+
+      const trace: any = {
+        x: series.x,
+        y: series.y,
+        type: traceType,
+        mode: mode,
+        name: series.name || `Series ${idx + 1}`,
+        marker: { color, size: 6 },
+        line: { color, width: 2, shape: block.smoothLine ? 'spline' : 'linear' },
+        yaxis: series.useSecondaryY ? 'y2' : 'y',
+        hovertemplate: `<b>${series.name || 'Data'}</b><br>${block.xAxisLabel || 'X'}: %{x}<br>${block.yAxisLabel || 'Y'}: %{y}<extra></extra>`,
+      }
+
+      if (fill && block.chartType !== 'scatter') {
+        trace.fill = fill
+        trace.fillcolor = `${color}26` // ~15% opacity
+      }
+
+      if (traceType === 'pie') {
+        trace.labels = series.x.map((_, i) => `Item ${i + 1}`)
+        trace.values = series.y
+      }
+
+      traces.push(trace)
+
+      // Trendlines
+      if (block.trendline === 'linear' && traceType === 'scatter') {
+        const trend = calculateLinearTrendline(series.x, series.y)
+        traces.push({
+          x: trend.x, y: trend.y, type: 'scatter', mode: 'lines',
+          name: `${series.name} (trend)`,
+          line: { color, width: 2, dash: 'dash' },
+          hoverinfo: 'skip',
+        })
+      } else if (block.trendline === 'moving-avg' && traceType === 'scatter') {
+        const avg = calculateMovingAverage(series.x, series.y, Math.max(10, Math.floor(series.x.length / 50)))
+        traces.push({
+          x: avg.x, y: avg.y, type: 'scatter', mode: 'lines',
+          name: `${series.name} (avg)`,
+          line: { color, width: 2, dash: 'dot' },
+          hoverinfo: 'skip',
+        })
+      }
+    })
+
+    return traces
+  }, [block, hasData])
+
+  // Build layout
+  const plotLayout = useMemo((): Partial<Plotly.Layout> => {
+    const hasSecondaryY = block.data.some(s => s.useSecondaryY)
+    return {
+      title: undefined,
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: '#1a2332',
+      font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
+      xaxis: {
+        title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+        type: block.xAxisType || 'linear',
+        gridcolor: 'rgba(212, 165, 116, 0.1)',
+        zeroline: false,
+        showgrid: true,
+        tickfont: { color: '#8a9aaa', size: 11 },
+        showspikes: block.showSpikelines,
+        spikemode: 'across',
+        spikethickness: 1,
+        spikecolor: '#D4A574',
+        rangeslider: { visible: true, bgcolor: '#1a2332', bordercolor: '#374151', thickness: 0.08 },
+      },
+      yaxis: {
+        title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+        type: block.yAxisType || 'linear',
+        gridcolor: 'rgba(212, 165, 116, 0.1)',
+        zeroline: false,
+        showgrid: true,
+        tickfont: { color: '#8a9aaa', size: 11 },
+        showspikes: block.showSpikelines,
+        spikemode: 'across',
+        spikethickness: 1,
+        spikecolor: '#D4A574',
+      },
+      yaxis2: hasSecondaryY ? {
+        title: { text: 'Secondary', font: { color: '#a8b8c8', size: 12 } },
+        overlaying: 'y',
+        side: 'right',
+        type: block.yAxisType || 'linear',
+        gridcolor: 'rgba(99, 102, 241, 0.1)',
+        zeroline: false,
+        showgrid: false,
+        tickfont: { color: '#8a9aaa', size: 11 },
+      } : undefined,
+      showlegend: block.showLegend || block.data.length > 1,
+      legend: { font: { color: '#a8b8c8' }, bgcolor: 'rgba(26, 35, 50, 0.8)' },
+      margin: { l: 60, r: hasSecondaryY ? 60 : 40, t: 20, b: 80 },
+      hovermode: 'x unified',
+      dragmode: 'zoom',
+      autosize: true,
+      annotations: (block.annotations || []).map(a => ({
+        x: a.x, y: a.y, text: a.text,
+        showarrow: a.showArrow,
+        arrowhead: 2,
+        arrowcolor: '#D4A574',
+        font: { color: '#fff', size: 12 },
+        bgcolor: 'rgba(26, 35, 50, 0.9)',
+        bordercolor: '#D4A574',
+        borderwidth: 1,
+        borderpad: 4,
+      })),
+      shapes: (block.shapes || []).map(s => ({
+        type: s.type,
+        x0: s.x0, x1: s.x1, y0: s.y0, y1: s.y1,
+        fillcolor: s.color || '#D4A574',
+        opacity: s.opacity || 0.2,
+        line: { width: 0 },
+      })),
+    }
+  }, [block])
 
   if (!hasData) {
     return (
@@ -161,48 +319,10 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       {block.title && (
         <h3 className="text-xl font-semibold text-white mb-4">{block.title}</h3>
       )}
-
       <div className="w-full h-[400px] md:h-[500px]">
         <Plot
-          data={block.data.map((d) => ({
-            x: d.x,
-            y: d.y,
-            type: block.chartType === 'bar' ? 'bar' : 'scatter',
-            mode: block.chartType === 'scatter' ? 'markers' : 'lines',
-            name: d.name || 'Data',
-            marker: { color: '#D4A574' },
-            line: { color: '#D4A574', width: 2 },
-            fill: block.chartType === 'line' ? 'tozeroy' : undefined,
-            fillcolor: block.chartType === 'line' ? 'rgba(212, 165, 116, 0.15)' : undefined,
-            hovertemplate: `<b>${block.xAxisLabel || 'X'}: %{x}</b><br>${block.yAxisLabel || 'Y'}: %{y}<extra></extra>`,
-          }))}
-          layout={{
-            title: undefined,
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: '#1a2332',
-            font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
-            xaxis: {
-              title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
-              gridcolor: 'rgba(212, 165, 116, 0.1)',
-              zeroline: false,
-              showgrid: true,
-              tickfont: { color: '#8a9aaa', size: 11 },
-              rangeslider: { visible: true, bgcolor: '#1a2332', bordercolor: '#374151', thickness: 0.1 },
-            },
-            yaxis: {
-              title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
-              gridcolor: 'rgba(212, 165, 116, 0.1)',
-              zeroline: false,
-              showgrid: true,
-              tickfont: { color: '#8a9aaa', size: 11 },
-            },
-            showlegend: block.showLegend,
-            legend: { font: { color: '#a8b8c8' } },
-            margin: { l: 60, r: 40, t: 20, b: 50 },
-            hovermode: 'x unified',
-            dragmode: 'zoom',
-            autosize: true,
-          }}
+          data={plotTraces}
+          layout={plotLayout}
           config={{
             responsive: true,
             displayModeBar: true,
@@ -215,9 +335,8 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
           useResizeHandler
         />
       </div>
-
       <div className="mt-4 pt-4 border-t border-steel-700 text-sm text-steel-400">
-        <span className="text-copper-400 font-medium">Tip:</span> Scroll to zoom, click and drag to pan. Double-click to reset view.
+        <span className="text-copper-400 font-medium">Tip:</span> Scroll to zoom, drag to pan. Use range slider for time navigation. Double-click to reset.
       </div>
     </div>
   )
@@ -226,19 +345,11 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
 // Image block
 function ImageBlockView({ block }: { block: ImageBlock }) {
   if (!block.url) return null
-
   return (
     <figure className="my-6">
-      <img
-        src={block.url}
-        alt={block.alt}
-        className="w-full rounded-xl border border-steel-700"
-        loading="lazy"
-      />
+      <img src={block.url} alt={block.alt} className="w-full rounded-xl border border-steel-700" loading="lazy" />
       {block.caption && (
-        <figcaption className="mt-3 text-center text-sm text-steel-400 italic">
-          {block.caption}
-        </figcaption>
+        <figcaption className="mt-3 text-center text-sm text-steel-400 italic">{block.caption}</figcaption>
       )}
     </figure>
   )
@@ -247,26 +358,15 @@ function ImageBlockView({ block }: { block: ImageBlock }) {
 // Code block
 function CodeBlockView({ block }: { block: CodeBlock }) {
   if (!block.code) return null
-
   return (
     <div className="my-6">
       <div className="flex items-center justify-between bg-steel-800 rounded-t-lg px-4 py-2 border-b border-steel-700">
-        <span className="text-xs font-medium text-copper-400 uppercase tracking-wider">
-          {block.language || 'code'}
-        </span>
-        <button
-          onClick={() => navigator.clipboard.writeText(block.code)}
-          className="text-xs text-steel-400 hover:text-copper-400 transition-colors"
-        >
-          Copy
-        </button>
+        <span className="text-xs font-medium text-copper-400 uppercase tracking-wider">{block.language || 'code'}</span>
+        <button onClick={() => navigator.clipboard.writeText(block.code)} className="text-xs text-steel-400 hover:text-copper-400 transition-colors">Copy</button>
       </div>
       <pre className="bg-steel-900 rounded-b-lg p-4 overflow-x-auto border border-steel-700 border-t-0">
-        <code className="text-sm text-steel-300 font-mono whitespace-pre">
-          {block.code}
-        </code>
+        <code className="text-sm text-steel-300 font-mono whitespace-pre">{block.code}</code>
       </pre>
     </div>
   )
 }
-

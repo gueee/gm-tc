@@ -10,18 +10,51 @@ export interface TextBlock extends BaseBlock {
   content: string // Markdown content
 }
 
+// Chart data series with individual settings
+export interface ChartDataSeries {
+  x: number[]
+  y: number[]
+  name?: string
+  color?: string
+  useSecondaryY?: boolean
+}
+
+// Annotation on chart
+export interface ChartAnnotation {
+  x: number
+  y: number
+  text: string
+  showArrow?: boolean
+}
+
+// Shape overlay (highlight region)
+export interface ChartShape {
+  type: 'rect' | 'line'
+  x0: number
+  x1: number
+  y0: number
+  y1: number
+  color?: string
+  opacity?: number
+}
+
 export interface ChartBlock extends BaseBlock {
   type: 'chart'
   title: string
-  chartType: 'scatter' | 'line' | 'bar'
-  data: {
-    x: number[]
-    y: number[]
-    name?: string
-  }[]
+  chartType: 'scatter' | 'line' | 'bar' | 'area' | 'histogram' | 'pie' | 'box'
+  data: ChartDataSeries[]
   xAxisLabel?: string
   yAxisLabel?: string
   showLegend?: boolean
+  // New options
+  showSpikelines?: boolean
+  smoothLine?: boolean
+  lineColor?: string
+  xAxisType?: 'linear' | 'log' | 'date'
+  yAxisType?: 'linear' | 'log'
+  trendline?: 'none' | 'linear' | 'moving-avg'
+  annotations?: ChartAnnotation[]
+  shapes?: ChartShape[]
 }
 
 export interface ImageBlock extends BaseBlock {
