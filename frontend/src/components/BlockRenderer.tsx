@@ -128,59 +128,23 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
 
     block.data.forEach((series, idx) => {
       const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
-      let traceType: string = 'scatter'
-      let mode: string = 'lines'
-      let fill: string | undefined
-
-      switch (block.chartType) {
-        case 'scatter': 
-          mode = 'markers'
-          break
-        case 'line': 
-          mode = 'lines'
-          break
-        case 'area': 
-          mode = 'lines'
-          fill = 'tozeroy'
-          break
-        case 'bar': 
-          traceType = 'bar'
-          break
-        case 'histogram': 
-          traceType = 'histogram'
-          break
-        case 'box': 
-          traceType = 'box'
-          break
-        case 'pie': 
-          traceType = 'pie'
-          break
-      }
+      // Use 'lines' for line/area, 'markers' for scatter
+      const mode = block.chartType === 'scatter' ? 'markers' : 'lines'
 
       const trace: Plotly.Data = {
         x: series.x,
         y: series.y,
-        type: traceType as any,
+        type: 'scatter' as const,
         mode: mode as any,
         name: series.name || `Series ${idx + 1}`,
         marker: { color, size: 6 },
-        line: { 
-          color, 
-          width: 2,
-          shape: block.smoothLine ? 'spline' : 'linear'
-        },
-        yaxis: series.useSecondaryY ? 'y2' : 'y',
-        hovertemplate: `<b>${series.name || 'Data'}</b><br>${block.xAxisLabel || 'X'}: %{x:.2f}<br>${block.yAxisLabel || 'Y'}: %{y:.2f}<extra></extra>`,
+        line: { color, width: 2 },
       }
 
-      if (fill) {
-        (trace as any).fill = fill
-        ;(trace as any).fillcolor = color + '26' // Add 15% opacity
-      }
-
-      if (traceType === 'pie') {
-        (trace as any).labels = series.x.map((_, i) => `Item ${i + 1}`)
-        ;(trace as any).values = series.y
+      // Only add fill for area charts
+      if (block.chartType === 'area') {
+        (trace as any).fill = 'tozeroy'
+        ;(trace as any).fillcolor = color + '26'
       }
 
       traces.push(trace)
