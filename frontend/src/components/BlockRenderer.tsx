@@ -285,6 +285,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       hovermode: 'x unified',
       dragmode: 'zoom',
       autosize: true,
+      height: 450,
       annotations: (block.annotations || []).map(a => ({
         x: a.x, y: a.y, text: a.text,
         showarrow: a.showArrow,

@@ -19,15 +19,15 @@ const SERIES_COLORS = [
 function calculateLinearTrendline(x: number[], y: number[]): { x: number[], y: number[] } {
   const n = x.length
   if (n < 2) return { x: [], y: [] }
-  
+
   const sumX = x.reduce((a, b) => a + b, 0)
   const sumY = y.reduce((a, b) => a + b, 0)
   const sumXY = x.reduce((acc, xi, i) => acc + xi * y[i], 0)
   const sumXX = x.reduce((acc, xi) => acc + xi * xi, 0)
-  
+
   const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
   const intercept = (sumY - slope * sumX) / n
-  
+
   const minX = Math.min(...x)
   const maxX = Math.max(...x)
   return {
@@ -39,16 +39,16 @@ function calculateLinearTrendline(x: number[], y: number[]): { x: number[], y: n
 // Calculate moving average
 function calculateMovingAverage(x: number[], y: number[], window = 10): { x: number[], y: number[] } {
   if (y.length < window) return { x, y }
-  
+
   const avgX: number[] = []
   const avgY: number[] = []
-  
+
   for (let i = window - 1; i < y.length; i++) {
     const sum = y.slice(i - window + 1, i + 1).reduce((a, b) => a + b, 0)
     avgX.push(x[i])
     avgY.push(sum / window)
   }
-  
+
   return { x: avgX, y: avgY }
 }
 
@@ -64,7 +64,7 @@ export default function ChartBlockEditor({
   const [isPreview, setIsPreview] = useState(false)
   const [parseError, setParseError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'data' | 'options' | 'annotations'>('data')
-  
+
   // Modal state for field selection
   const [showFieldModal, setShowFieldModal] = useState(false)
   const [pendingData, setPendingData] = useState<ParsedData | null>(null)
@@ -72,15 +72,15 @@ export default function ChartBlockEditor({
   const [selectedYField, setSelectedYField] = useState('')
   const [selectedSeriesName, setSelectedSeriesName] = useState('')
   const [editingSeriesIndex, setEditingSeriesIndex] = useState<number | null>(null)
-  
+
   // Annotation modal
   const [showAnnotationModal, setShowAnnotationModal] = useState(false)
   const [newAnnotation, setNewAnnotation] = useState<ChartAnnotation>({ x: 0, y: 0, text: '', showArrow: true })
-  
+
   // Shape modal
   const [showShapeModal, setShowShapeModal] = useState(false)
   const [newShape, setNewShape] = useState<ChartShape>({ type: 'rect', x0: 0, x1: 100, y0: 0, y1: 100, color: '#D4A574', opacity: 0.2 })
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Parse JSON data
@@ -172,14 +172,14 @@ export default function ChartBlockEditor({
         x = sampledX
         y = sampledY
       }
-      
+
       const newSeries: ChartDataSeries = {
         x, y,
         name: selectedSeriesName || `Series ${block.data.length + 1}`,
         color: SERIES_COLORS[block.data.length % SERIES_COLORS.length],
         useSecondaryY: false
       }
-      
+
       let newData: ChartDataSeries[]
       if (editingSeriesIndex !== null) {
         newData = [...block.data]
@@ -187,14 +187,14 @@ export default function ChartBlockEditor({
       } else {
         newData = [...block.data, newSeries]
       }
-      
+
       onUpdate({
         ...block,
         data: newData,
         xAxisLabel: block.xAxisLabel || selectedXField,
         yAxisLabel: block.yAxisLabel || selectedYField,
       })
-      
+
       setShowFieldModal(false)
       setPendingData(null)
       setParseError(null)
@@ -249,17 +249,17 @@ export default function ChartBlockEditor({
   // Build Plotly traces
   const plotTraces = useMemo(() => {
     if (!hasData) return []
-    
+
     const traces: Plotly.Data[] = []
-    
+
     block.data.forEach((series, idx) => {
       const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
-      
+
       // Determine trace type and mode
       let traceType: string = 'scatter'
       let mode: string = 'lines'
       let fill: string | undefined
-      
+
       switch (block.chartType) {
         case 'scatter':
           mode = 'markers'
@@ -285,7 +285,7 @@ export default function ChartBlockEditor({
           traceType = 'pie'
           break
       }
-      
+
       const trace: any = {
         x: series.x,
         y: series.y,
@@ -293,15 +293,15 @@ export default function ChartBlockEditor({
         mode: mode,
         name: series.name || `Series ${idx + 1}`,
         marker: { color, size: 6 },
-        line: { 
-          color, 
+        line: {
+          color,
           width: 2,
           shape: block.smoothLine ? 'spline' : 'linear'
         },
         yaxis: series.useSecondaryY ? 'y2' : 'y',
         hovertemplate: `<b>${series.name || 'Data'}</b><br>${block.xAxisLabel || 'X'}: %{x}<br>${block.yAxisLabel || 'Y'}: %{y}<extra></extra>`,
       }
-      
+
       if (fill && block.chartType !== 'scatter') {
         trace.fill = fill
         trace.fillcolor = color.replace(')', ', 0.15)').replace('rgb', 'rgba').replace('#', 'rgba(').replace(/^rgba\(([A-Fa-f0-9]{6})/, (_, hex) => {
@@ -311,14 +311,14 @@ export default function ChartBlockEditor({
           return `rgba(${r}, ${g}, ${b}`
         }) + ', 0.15)'
       }
-      
+
       if (traceType === 'pie') {
         trace.labels = series.x.map((_, i) => `Item ${i + 1}`)
         trace.values = series.y
       }
-      
+
       traces.push(trace)
-      
+
       // Add trendline if enabled
       if (block.trendline === 'linear' && traceType === 'scatter') {
         const trend = calculateLinearTrendline(series.x, series.y)
@@ -344,14 +344,14 @@ export default function ChartBlockEditor({
         })
       }
     })
-    
+
     return traces
   }, [block, hasData])
 
   // Build Plotly layout
   const plotLayout = useMemo((): Partial<Plotly.Layout> => {
     const hasSecondaryY = block.data.some(s => s.useSecondaryY)
-    
+
     return {
       title: block.title ? { text: block.title, font: { color: '#fff', size: 16 } } : undefined,
       paper_bgcolor: 'transparent',
