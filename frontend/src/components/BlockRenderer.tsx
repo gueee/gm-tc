@@ -153,54 +153,23 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
     return traces
   }, [block, hasData])
 
-  // Build layout
+  // Build layout - simplified
   const plotLayout = useMemo((): Partial<Plotly.Layout> => {
-    const hasSecondaryY = block.data?.some(s => s.useSecondaryY) || false
-    
     return {
-      paper_bgcolor: 'transparent',
+      paper_bgcolor: '#1a2332',
       plot_bgcolor: '#1a2332',
-      font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
-      xaxis: {
-        title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
-        type: (block.xAxisType || 'linear') as any,
+      font: { color: '#a8b8c8' },
+      xaxis: { 
         gridcolor: 'rgba(212, 165, 116, 0.1)',
-        zeroline: false,
-        showgrid: true,
-        tickfont: { color: '#8a9aaa', size: 11 },
-        showspikes: block.showSpikelines || false,
-        spikemode: 'across',
-        spikethickness: 1,
-        spikecolor: '#D4A574',
+        title: block.xAxisLabel ? { text: block.xAxisLabel } : undefined,
       },
-      yaxis: {
-        title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
-        type: (block.yAxisType || 'linear') as any,
+      yaxis: { 
         gridcolor: 'rgba(212, 165, 116, 0.1)',
-        zeroline: false,
-        showgrid: true,
-        tickfont: { color: '#8a9aaa', size: 11 },
-        showspikes: block.showSpikelines || false,
-        spikemode: 'across',
-        spikethickness: 1,
-        spikecolor: '#D4A574',
+        title: block.yAxisLabel ? { text: block.yAxisLabel } : undefined,
       },
-      yaxis2: hasSecondaryY ? {
-        title: { text: 'Secondary', font: { color: '#a8b8c8', size: 12 } },
-        overlaying: 'y',
-        side: 'right',
-        gridcolor: 'rgba(99, 102, 241, 0.1)',
-        zeroline: false,
-        showgrid: false,
-        tickfont: { color: '#8a9aaa', size: 11 },
-      } : undefined,
-      showlegend: block.showLegend || (block.data?.length || 0) > 1,
-      legend: { font: { color: '#a8b8c8' }, bgcolor: 'rgba(26, 35, 50, 0.8)' },
-      margin: { l: 60, r: hasSecondaryY ? 60 : 40, t: 20, b: 50 },
-      hovermode: 'x unified',
-      dragmode: 'zoom',
-      autosize: true,
+      margin: { l: 60, r: 30, t: 20, b: 50 },
       height: 400,
+      showlegend: (block.data?.length || 0) > 1,
     }
   }, [block])
 
