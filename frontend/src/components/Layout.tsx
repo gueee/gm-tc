@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Menu, X, User, LogOut } from 'lucide-react'
+import { Menu, X, LogOut, Settings } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -10,6 +10,7 @@ export default function Layout() {
 
   const navLinks = [
     { to: '/', label: 'Home' },
+    { to: '/articles', label: 'Articles' },
   ]
 
   const isActive = (path: string) => location.pathname === path
@@ -41,37 +42,25 @@ export default function Layout() {
                 </Link>
               ))}
 
-              {isAuthenticated ? (
-                <div className="flex items-center space-x-4">
+              {/* Admin controls - only show when authenticated, subtle icon */}
+              {isAuthenticated && (
+                <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-steel-700">
                   <Link
                     to="/admin"
-                    className={`text-sm font-medium transition-colors ${
-                      isActive('/admin')
-                        ? 'text-copper-400'
-                        : 'text-steel-300 hover:text-copper-400'
-                    }`}
+                    className="p-2 text-steel-500 hover:text-copper-400 transition-colors"
+                    title="Admin Panel"
                   >
-                    Admin
+                    <Settings className="w-4 h-4" />
                   </Link>
-                  <div className="flex items-center space-x-2 text-steel-400">
-                    <User className="w-4 h-4" />
-                    <span className="text-sm">{user?.email}</span>
-                  </div>
+                  <span className="text-xs text-steel-600">{user?.email?.split('@')[0]}</span>
                   <button
                     onClick={logout}
-                    className="p-2 text-steel-400 hover:text-copper-400 transition-colors"
+                    className="p-1.5 text-steel-500 hover:text-copper-400 transition-colors"
                     title="Logout"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              ) : (
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-steel-300 hover:text-copper-400 transition-colors"
-                >
-                  Login
-                </Link>
               )}
             </nav>
 
@@ -103,12 +92,12 @@ export default function Layout() {
                   {link.label}
                 </Link>
               ))}
-              {isAuthenticated ? (
+              {isAuthenticated && (
                 <>
                   <Link
                     to="/admin"
                     onClick={() => setIsMenuOpen(false)}
-                    className="block py-2 text-sm font-medium text-steel-300 hover:text-copper-400"
+                    className="block py-2 text-sm font-medium text-steel-500 hover:text-copper-400"
                   >
                     Admin
                   </Link>
@@ -117,19 +106,11 @@ export default function Layout() {
                       logout()
                       setIsMenuOpen(false)
                     }}
-                    className="block py-2 text-sm font-medium text-steel-300 hover:text-copper-400"
+                    className="block py-2 text-sm font-medium text-steel-500 hover:text-copper-400"
                   >
                     Logout
                   </button>
                 </>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block py-2 text-sm font-medium text-steel-300 hover:text-copper-400"
-                >
-                  Login
-                </Link>
               )}
             </nav>
           </div>
@@ -144,14 +125,28 @@ export default function Layout() {
       {/* Footer */}
       <footer className="bg-steel-900 border-t border-steel-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Copyright */}
             <div className="text-steel-500 text-sm">
-              © {new Date().getFullYear()} GM-TC. All rights reserved.
+              © {new Date().getFullYear()} GM-TC. Private technical blog.
             </div>
-            <div className="mt-4 md:mt-0 text-steel-500 text-sm">
-              <a href="mailto:office@gm-tc.tech" className="hover:text-copper-400 transition-colors">
-                office@gm-tc.tech
-              </a>
+            
+            {/* Footer Links */}
+            <div className="flex items-center gap-6 text-sm">
+              <Link 
+                to="/impressum" 
+                className="text-steel-500 hover:text-copper-400 transition-colors"
+              >
+                Impressum
+              </Link>
+              {/* Hidden login link - only visible to those who know */}
+              <Link 
+                to="/login" 
+                className="text-steel-700 hover:text-steel-500 transition-colors text-xs"
+                title="Admin access"
+              >
+                •
+              </Link>
             </div>
           </div>
         </div>
@@ -159,4 +154,3 @@ export default function Layout() {
     </div>
   )
 }
-

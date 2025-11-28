@@ -191,11 +191,11 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         spikemode: showSpikes ? 'across' : undefined,
         spikethickness: showSpikes ? 1 : undefined,
         spikecolor: showSpikes ? '#D4A574' : undefined,
-        rangeslider: { 
-          visible: true, 
-          bgcolor: '#1a2332', 
-          bordercolor: '#374151', 
-          thickness: 0.1 
+        rangeslider: {
+          visible: true,
+          bgcolor: '#1a2332',
+          bordercolor: '#374151',
+          thickness: 0.1
         },
       },
 

@@ -1,9 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
-import CategoryPage from './pages/CategoryPage'
+import ArticlesPage from './pages/ArticlesPage'
 import ArticlePage from './pages/ArticlePage'
 import LoginPage from './pages/LoginPage'
+import ImpressumPage from './pages/ImpressumPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import {
   AdminLayout,
@@ -21,8 +22,9 @@ function App() {
       {/* Public routes with main layout */}
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
-        <Route path="category/:slug" element={<CategoryPage />} />
+        <Route path="articles" element={<ArticlesPage />} />
         <Route path="article/:slug" element={<ArticlePage />} />
+        <Route path="impressum" element={<ImpressumPage />} />
         <Route path="login" element={<LoginPage />} />
       </Route>
 
@@ -37,8 +39,10 @@ function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="articles" element={<ArticleList />} />
+        <Route path="articles/new" element={<ArticleEditor />} />
         <Route path="articles/:id" element={<ArticleEditor />} />
         <Route path="categories" element={<CategoryList />} />
+        <Route path="categories/new" element={<CategoryEditor />} />
         <Route path="categories/:id" element={<CategoryEditor />} />
         <Route path="settings" element={<Settings />} />
       </Route>
