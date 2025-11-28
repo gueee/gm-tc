@@ -167,8 +167,8 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       paper_bgcolor: '#1a2332',
       plot_bgcolor: '#1a2332',
       font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
-      margin: { l: 60, r: hasSecondaryY ? 60 : 30, t: 20, b: 50 },
-      height: 400,
+      margin: { l: 60, r: hasSecondaryY ? 60 : 30, t: 20, b: 80 },
+      height: 450,
       autosize: true,
       showlegend: block.showLegend || (block.data?.length || 0) > 1,
       legend: {
@@ -180,7 +180,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       hovermode: 'x unified',
       dragmode: 'zoom',
 
-      // X-axis
+      // X-axis with range slider
       xaxis: {
         title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
         type: block.xAxisType || 'linear',
@@ -191,6 +191,12 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         spikemode: showSpikes ? 'across' : undefined,
         spikethickness: showSpikes ? 1 : undefined,
         spikecolor: showSpikes ? '#D4A574' : undefined,
+        rangeslider: { 
+          visible: true, 
+          bgcolor: '#1a2332', 
+          bordercolor: '#374151', 
+          thickness: 0.1 
+        },
       },
 
       // Y-axis (primary)
@@ -245,7 +251,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
       {block.title && (
         <h3 className="text-xl font-semibold text-white mb-4">{block.title}</h3>
       )}
-      <div className="w-full" style={{ height: '400px' }}>
+      <div className="w-full" style={{ height: '500px' }}>
         <Plot
           data={plotTraces}
           layout={plotLayout}
