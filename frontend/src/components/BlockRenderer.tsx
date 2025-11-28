@@ -57,7 +57,7 @@ interface BlockRendererProps {
   blocks: Block[]
 }
 
-// Color palette
+// Color palette for multiple series
 const SERIES_COLORS = [
   '#D4A574', '#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'
 ]
@@ -117,61 +117,120 @@ function TextBlockView({ block }: { block: TextBlock }) {
   )
 }
 
-// Chart block - renders Plotly chart
+// Chart block - full-featured Plotly chart
 function ChartBlockView({ block }: { block: ChartBlock }) {
   const hasData = block.data && block.data.length > 0 && block.data[0]?.x?.length > 0
 
-  // Build traces
-  const plotTraces = useMemo(() => {
+  // Build traces for each data series
+  const plotTraces = useMemo((): Plotly.Data[] => {
     if (!hasData) return []
-    const traces: Plotly.Data[] = []
-
-    block.data.forEach((series, idx) => {
+    
+    return block.data.map((series, idx) => {
       const color = series.color || SERIES_COLORS[idx % SERIES_COLORS.length]
-      // Use 'lines' for line/area, 'markers' for scatter
-      const mode = block.chartType === 'scatter' ? 'markers' : 'lines'
-
+      const isScatter = block.chartType === 'scatter'
+      const isArea = block.chartType === 'area'
+      
       const trace: Plotly.Data = {
         x: series.x,
         y: series.y,
-        type: 'scatter' as const,
-        mode: mode as any,
+        type: 'scatter',
+        mode: isScatter ? 'markers' : 'lines',
         name: series.name || `Series ${idx + 1}`,
         marker: { color, size: 6 },
-        line: { color, width: 2 },
+        line: { 
+          color, 
+          width: 2,
+          shape: block.smoothLine ? 'spline' : 'linear'
+        },
+        yaxis: series.useSecondaryY ? 'y2' : 'y',
+        hovertemplate: `<b>${series.name || 'Data'}</b><br>` +
+          `${block.xAxisLabel || 'X'}: %{x:.2f}<br>` +
+          `${block.yAxisLabel || 'Y'}: %{y:.2f}<extra></extra>`,
       }
-
-      // Only add fill for area charts
-      if (block.chartType === 'area') {
+      
+      // Area fill
+      if (isArea) {
         (trace as any).fill = 'tozeroy'
         ;(trace as any).fillcolor = color + '26'
       }
-
-      traces.push(trace)
+      
+      return trace
     })
-
-    return traces
   }, [block, hasData])
 
-  // Build layout - simplified
+  // Build layout with all features
   const plotLayout = useMemo((): Partial<Plotly.Layout> => {
-    return {
+    const hasSecondaryY = block.data?.some(s => s.useSecondaryY) || false
+    const showSpikes = block.showSpikelines === true
+    
+    const layout: Partial<Plotly.Layout> = {
       paper_bgcolor: '#1a2332',
       plot_bgcolor: '#1a2332',
-      font: { color: '#a8b8c8' },
-      xaxis: { 
-        gridcolor: 'rgba(212, 165, 116, 0.1)',
-        title: block.xAxisLabel ? { text: block.xAxisLabel } : undefined,
-      },
-      yaxis: { 
-        gridcolor: 'rgba(212, 165, 116, 0.1)',
-        title: block.yAxisLabel ? { text: block.yAxisLabel } : undefined,
-      },
-      margin: { l: 60, r: 30, t: 20, b: 50 },
+      font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
+      margin: { l: 60, r: hasSecondaryY ? 60 : 30, t: 20, b: 50 },
       height: 400,
-      showlegend: (block.data?.length || 0) > 1,
+      autosize: true,
+      showlegend: block.showLegend || (block.data?.length || 0) > 1,
+      legend: { 
+        font: { color: '#a8b8c8' }, 
+        bgcolor: 'rgba(26, 35, 50, 0.8)',
+        x: 0.01,
+        y: 0.99,
+      },
+      hovermode: 'x unified',
+      dragmode: 'zoom',
+      
+      // X-axis
+      xaxis: {
+        title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+        type: block.xAxisType || 'linear',
+        gridcolor: 'rgba(212, 165, 116, 0.15)',
+        zeroline: false,
+        tickfont: { color: '#8a9aaa', size: 11 },
+        showspikes: showSpikes,
+        spikemode: showSpikes ? 'across' : undefined,
+        spikethickness: showSpikes ? 1 : undefined,
+        spikecolor: showSpikes ? '#D4A574' : undefined,
+      },
+      
+      // Y-axis (primary)
+      yaxis: {
+        title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+        type: block.yAxisType || 'linear',
+        gridcolor: 'rgba(212, 165, 116, 0.15)',
+        zeroline: false,
+        tickfont: { color: '#8a9aaa', size: 11 },
+        showspikes: showSpikes,
+        spikemode: showSpikes ? 'across' : undefined,
+        spikethickness: showSpikes ? 1 : undefined,
+        spikecolor: showSpikes ? '#D4A574' : undefined,
+      },
     }
+    
+    // Secondary Y-axis (only add if needed)
+    if (hasSecondaryY) {
+      layout.yaxis2 = {
+        title: { text: 'Secondary', font: { color: '#a8b8c8', size: 12 } },
+        overlaying: 'y',
+        side: 'right',
+        gridcolor: 'rgba(99, 102, 241, 0.15)',
+        zeroline: false,
+        tickfont: { color: '#8a9aaa', size: 11 },
+      }
+    }
+    
+    return layout
   }, [block])
+
+  // Plotly config
+  const plotConfig: Partial<Plotly.Config> = {
+    responsive: true,
+    displayModeBar: true,
+    displaylogo: false,
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+    scrollZoom: true,
+    doubleClick: 'reset',
+  }
 
   if (!hasData) {
     return (
@@ -190,14 +249,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
         <Plot
           data={plotTraces}
           layout={plotLayout}
-          config={{
-            responsive: true,
-            displayModeBar: true,
-            displaylogo: false,
-            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
-            scrollZoom: true,
-            doubleClick: 'reset',
-          }}
+          config={plotConfig}
           style={{ width: '100%', height: '100%' }}
           useResizeHandler
         />
