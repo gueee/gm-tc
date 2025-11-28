@@ -128,7 +128,16 @@ export default function ArticleEditor() {
       }
     } catch (error: any) {
       console.error('Failed to save article:', error)
-      const errorMsg = error.response?.data?.detail || 'Failed to save article'
+      let errorMsg = 'Failed to save article'
+      const detail = error.response?.data?.detail
+      if (typeof detail === 'string') {
+        errorMsg = detail
+      } else if (Array.isArray(detail)) {
+        // Pydantic validation errors
+        errorMsg = detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ')
+      } else if (detail) {
+        errorMsg = JSON.stringify(detail)
+      }
       setMessage({ type: 'error', text: errorMsg })
     } finally {
       setIsSaving(false)
