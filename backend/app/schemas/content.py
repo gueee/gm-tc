@@ -76,7 +76,7 @@ class ContentBase(BaseModel):
     content: Optional[str] = None
     content_type: Optional[str] = "article"
     status: Optional[str] = "draft"
-    blocks: Optional[dict] = None
+    blocks: Optional[Any] = None  # Can be array of blocks or dict
     extra_data: Optional[dict] = None
     category_id: Optional[int] = None
     meta_title: Optional[str] = None
@@ -95,7 +95,7 @@ class ContentUpdate(BaseModel):
     content: Optional[str] = None
     content_type: Optional[str] = None
     status: Optional[str] = None
-    blocks: Optional[dict] = None
+    blocks: Optional[Any] = None  # Can be array of blocks or dict
     extra_data: Optional[dict] = None
     category_id: Optional[int] = None
     meta_title: Optional[str] = None
@@ -122,4 +122,7 @@ class ContentListResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+
+
 
