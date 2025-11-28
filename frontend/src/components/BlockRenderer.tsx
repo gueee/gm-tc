@@ -187,6 +187,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
               zeroline: false,
               showgrid: true,
               tickfont: { color: '#8a9aaa', size: 11 },
+              rangeslider: { visible: true, bgcolor: '#1a2332', bordercolor: '#374151', thickness: 0.1 },
             },
             yaxis: {
               title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
