@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ArticlesPage from './pages/ArticlesPage'
 import ArticlePage from './pages/ArticlePage'
+import CategoryPage from './pages/CategoryPage'
 import LoginPage from './pages/LoginPage'
 import ImpressumPage from './pages/ImpressumPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -24,6 +25,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="articles" element={<ArticlesPage />} />
         <Route path="article/:slug" element={<ArticlePage />} />
+        <Route path="category/:slug" element={<CategoryPage />} />
         <Route path="impressum" element={<ImpressumPage />} />
         <Route path="login" element={<LoginPage />} />
       </Route>
