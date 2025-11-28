@@ -1,1 +1,0 @@
-# GM-TC CMS Backend
