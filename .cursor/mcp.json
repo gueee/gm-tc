@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@bytebase/dbhub", "--dsn", "${GMTC_DATABASE_URL}"],
+      "disabled": true
+    }
+  }
+}

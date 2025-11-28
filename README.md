@@ -1,122 +1,68 @@
-# GM-TC CRM System
+# GM-TC Website
 
-A specialized Customer Relationship Management (CRM) system for managing a 3D printer manufacturing business. This CRM handles suppliers, customers, printer parts inventory, delivery notes, billing, and related business operations.
+Personal website for [gm-tc.tech](https://gm-tc.tech).
 
-## Overview
+## Tech Stack
 
-This CRM system is designed to streamline operations for GM-TC, a business specializing in custom 3D printer manufacturing. It provides comprehensive management tools for all aspects of the business workflow.
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: PHP (CMS - coming soon)
+- **Hosting**: Uberspace (U7)
+- **Deployment**: Git pull from GitHub
 
-## Features
+## Project Structure
 
-### Core Modules
-
-- **Supplier Management**
-  - Supplier database and contact information
-  - Supplier performance tracking
-  - Purchase order management
-
-- **Customer Management**
-  - Customer database and profiles
-  - Customer communication history
-  - Order tracking and history
-
-- **Parts Management**
-  - Inventory of 3D printer components
-  - Parts catalog and specifications
-  - Stock level tracking
-  - Parts-to-build mapping
-
-- **Printer Build Management**
-  - Build configurations and recipes
-  - Parts requirements per build
-  - Build status tracking
-
-- **Delivery Management**
-  - Delivery notes generation
-  - Shipping tracking
-  - Delivery history
-
-- **Billing & Invoicing**
-  - Invoice generation
-  - Payment tracking
-  - Financial reporting
-
-## Deployment
-
-### Domain
-- **Production Domain**: [gm-tc.tech](https://gm-tc.tech)
-- **Hosting**: uberspace.de
-- **Access**: gmtc.uber.space (SSH, FTP, etc.)
-
-### Server Details
-- Hosting provider: uberspace.de
-- SSH/FTP access via: gmtc.uber.space
-
-## Technology Stack
-
-### Backend
-- **FastAPI** - Modern Python web framework
-- **SQLAlchemy** - Database ORM
-- **PostgreSQL** - Production database (SQLite for development)
-- **Alembic** - Database migrations
-- **JWT** - Authentication
-- **Pydantic** - Data validation
-
-### Frontend (Coming Soon)
-- **React + TypeScript** - UI framework
-- **Shadcn/ui + TailwindCSS** - UI components
-- **TanStack Query** - State management
-- **Vite** - Build tool
-
-### Deployment
-- **Uberspace.de** - Hosting provider
-- **Nginx** - Reverse proxy
-- **Supervisord** - Process management
-
-## Development Setup
-
-### Quick Start
-
-```bash
-# Backend
-cd backend
-source venv/bin/activate
-uvicorn main:app --reload
-
-# Visit http://localhost:8000/docs for API documentation
+```
+gm-tc/
+├── public/               # Web-accessible files
+│   ├── index.html        # Homepage
+│   ├── css/
+│   │   └── main.css      # Styles
+│   └── assets/           # Images, fonts, etc.
+├── cms/                  # CMS backend (coming soon)
+│   ├── api/
+│   ├── admin/
+│   └── config/
+├── scripts/
+│   └── deploy-gm-tc.sh   # Deployment script for Uberspace
+└── skills/               # Development guidelines
 ```
 
-### Detailed Setup
+## Development Workflow
 
-See [backend/README.md](backend/README.md) for complete backend setup instructions.
+1. Work on `dev` branch
+2. Test locally
+3. Merge to `main` when ready
+4. SSH to Uberspace and pull:
 
-## Project Documentation
+```bash
+ssh gmtc@gmtc.uber.space
+cd ~/repos/gm-tc
+git pull origin main
+```
 
-- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current status and progress
-- **[STRATEGY.md](STRATEGY.md)** - 14-week implementation plan
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Server deployment guide
-- **[CLAUDE.md](CLAUDE.md)** - Development guide for AI assistants
+Or use the deploy script:
 
-## Current Status
+```bash
+~/bin/deploy-gm-tc.sh
+```
 
-✅ **Phase 0 Complete** (90%):
-- Backend API framework
-- Authentication system
-- Database migrations
-- Development environment
+## Local Development
 
-⏳ **Next Steps**:
-- Frontend setup
-- Parts management module
-- Supplier management module
+Simply open `public/index.html` in your browser, or use a local server:
 
-## License
+```bash
+# Python
+cd public && python -m http.server 8000
 
-_To be determined_
+# Node.js
+npx serve public
+
+# PHP
+php -S localhost:8000 -t public
+```
 
 ## Contact
 
+- **Website**: [gm-tc.tech](https://gm-tc.tech)
 - **Email**: office@gm-tc.tech
-- **Repository**: https://github.com/gueee/gm-tc
-- **Domain**: https://gm-tc.tech
 

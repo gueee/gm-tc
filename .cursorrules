@@ -1,0 +1,84 @@
+# gm-tc.tech Project Rules
+
+## Project Overview
+- **Website**: gm-tc.tech
+- **Hosting**: Uberspace (U7)
+- **Deployment**: Git pull from GitHub/GitLab
+- **Stack**: HTML, CSS, JavaScript, PHP (CMS backend)
+
+## Code Style
+
+### General
+- No redundant functions or methods
+- DRY (Don't Repeat Yourself)
+- Meaningful variable/function names
+- Comment complex logic only
+
+### HTML
+- Semantic HTML5 elements
+- Proper heading hierarchy
+- Accessibility attributes (ARIA, alt text)
+
+### CSS
+- BEM naming convention
+- Mobile-first responsive design
+- CSS custom properties for theming
+- No !important unless absolutely necessary
+
+### JavaScript
+- ES6+ syntax
+- Vanilla JS preferred over frameworks
+- Async/await for asynchronous code
+- Descriptive error handling
+
+### PHP (CMS)
+- PSR-12 coding standard
+- Prepared statements for DB queries
+- Input validation on all user data
+
+## Skills Reference
+
+For detailed context, reference these skill files:
+
+| Skill | When to Use |
+|-------|-------------|
+| `skills/web-design/SKILL.md` | Frontend, UI, styling, layouts |
+| `skills/cms-development/SKILL.md` | Backend, database, API, auth |
+| `skills/git-workflow/SKILL.md` | Version control, branching, commits |
+| `skills/uberspace-deployment/SKILL.md` | Server config, deployment |
+| `skills/debugging/SKILL.md` | Troubleshooting, fixing bugs |
+| `skills/seo-optimization/SKILL.md` | Meta tags, search, structured data |
+| `skills/cursor-project/SKILL.md` | IDE setup, workspace config |
+
+## Workflow
+
+1. Work on `dev` branch
+2. Commit with conventional messages: `type: description`
+3. Test locally
+4. Merge to `main` when ready
+5. SSH to Uberspace and pull
+
+## File Organization
+
+```
+gm-tc/
+├── .cursorrules          # This file
+├── skills/               # Claude skills
+├── public/               # Web-accessible files
+│   ├── index.html
+│   ├── css/
+│   ├── js/
+│   └── assets/
+├── cms/                  # CMS backend
+│   ├── api/
+│   ├── admin/
+│   └── config/
+└── docs/                 # Project documentation
+```
+
+## Important Notes
+
+- **Never commit**: .env files, storage/, node_modules/, vendor/
+- **Always validate**: User input, file uploads, API responses
+- **Test on**: Mobile, tablet, desktop breakpoints
+- **Check**: Console errors, network failures, server logs

@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ritwickdey.liveserver",
+    "eamodio.gitlens",
+    "pranaygp.vscode-css-peek",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "zignd.html-css-class-completion",
+    "ecmel.vscode-html-css",
+    "streetsidesoftware.code-spell-checker",
+    "naumovs.color-highlight",
+    "bmewburn.vscode-intelephense-client",
+    "anthropic.claude-code"
+  ]
+}

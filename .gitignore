@@ -23,7 +23,8 @@ build/
 .env.*.local
 
 # IDEs
-.vscode/
+# .vscode/ - tracked for shared settings
+# .cursor/ - tracked for MCP config
 .idea/
 *.swp
 *.swo

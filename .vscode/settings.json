@@ -1,0 +1,63 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.rulers": [100],
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/*.log": true
+  },
+  
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/storage": true,
+    "**/.git": true
+  },
+  
+  "html.format.wrapLineLength": 100,
+  "html.format.indentInnerHtml": true,
+  
+  "css.validate": true,
+  "css.lint.duplicateProperties": "warning",
+  "css.lint.emptyRules": "warning",
+  
+  "javascript.preferences.quoteStyle": "single",
+  "javascript.format.semicolons": "insert",
+  
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "php": "html"
+  },
+  
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[php]": {
+    "editor.tabSize": 4
+  },
+  
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.port": 5500,
+  
+  "git.confirmSync": false,
+  "git.autofetch": true
+}
