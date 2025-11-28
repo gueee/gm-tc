@@ -1,11 +1,18 @@
 """
 GM-TC CMS - FastAPI Application Entry Point
 """
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.db.session import engine, Base
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Import routers (will be created next)
 from app.api.auth import router as auth_router
@@ -36,6 +43,20 @@ app.add_middleware(
 app.include_router(auth_router, prefix=settings.API_PREFIX)
 app.include_router(content_router, prefix=settings.API_PREFIX)
 app.include_router(homepage_router, prefix=settings.API_PREFIX)
+
+
+# Custom exception handler for validation errors - logs details
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error on {request.method} {request.url}")
+    logger.error(f"Errors: {exc.errors()}")
+    # Try to log body size
+    body = await request.body()
+    logger.error(f"Request body size: {len(body)} bytes")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )
 
 
 @app.get("/")
