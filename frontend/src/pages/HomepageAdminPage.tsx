@@ -52,7 +52,7 @@ export default function HomepageAdminPage() {
     setIsSaving(true)
     setMessage(null)
     try {
-      await updateHomepageContent('hero', hero)
+      await updateHomepageContent('hero', hero as unknown as Record<string, unknown>)
       setMessage({ type: 'success', text: 'Hero content saved successfully!' })
     } catch (error) {
       console.error('Failed to save hero:', error)

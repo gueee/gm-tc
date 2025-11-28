@@ -113,11 +113,13 @@ chmod +x ~/bin/deploy-gm-tc.sh
 ## Verification
 
 1. Check API health:
+
    ```bash
    curl https://gm-tc.tech/api/v1/health
    ```
 
 2. Check frontend:
+
    ```bash
    curl -I https://gm-tc.tech
    ```
@@ -191,4 +193,3 @@ uberspace web domain add www.gm-tc.tech
 ```
 
 HTTPS is automatically provided via Let's Encrypt.
-
