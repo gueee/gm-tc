@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Code Extrusion Rate Analysis</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #1a2332;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #232f3e;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid #2d3e52;
+        }
+        
+        .header {
+            background: #1a2332;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #2d3e52;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        
+        .header h1 .accent {
+            color: #D4A574;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #a8b8c8;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: #1a2332;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2d3e52;
+            border-left: 3px solid #D4A574;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 165, 116, 0.15);
+            border-color: #D4A574;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #8a9aaa;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #D4A574;
+            margin-bottom: 4px;
+        }
+        
+        .stat-unit {
+            font-size: 11px;
+            color: #6a7a8a;
+        }
+        
+        .chart-section {
+            background: #1a2332;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #2d3e52;
+        }
+        
+        .chart-section h2 {
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-size: 18px;
+        }
+        
+        #extrusionChart {
+            width: 100%;
+            height: 500px;
+        }
+        
+        .chart-controls {
+            font-size: 12px;
+            color: #8a9aaa;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2d3e52;
+        }
+        
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .spec-item {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #a8b8c8;
+        }
+        
+        .spec-item strong {
+            color: #D4A574;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .note {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #8a9aaa;
+            line-height: 1.6;
+            padding-top: 12px;
+            border-top: 1px solid #2d3e52;
+        }
+        
+        .note strong {
+            color: #D4A574;
+        }
+        
+        .footer {
+            background: #1a2332;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6a7a8a;
+            border-top: 1px solid #2d3e52;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+            
+            #extrusionChart {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Extrusion <span class="accent">Rate Analysis</span></h1>
+            <p>Generated from 3D printer G-code analysis</p>
+        </div>
+        
+        <div class="content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Minimum Rate</div>
+                    <div class="stat-value">-0.97</div>
+                    <div class="stat-unit">mm³/s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Average Rate</div>
+                    <div class="stat-value">53.84</div>
+                    <div class="stat-unit">mm³/s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Maximum Rate</div>
+                    <div class="stat-value">90.05</div>
+                    <div class="stat-unit">mm³/s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Actual Print Time</div>
+                    <div class="stat-value">24:26</div>
+                    <div class="stat-unit">minutes:seconds</div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Volumetric Extrusion Rate Over Time</h2>
+                <div id="extrusionChart"></div>
+                <div class="chart-controls">
+                    💡 <strong>Tip:</strong> Scroll to zoom, click and drag to pan. Double-click to reset.
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Print Specifications</h2>
+                <div class="specs-grid">
+                    <div class="spec-item"><strong>Nozzle Diameter:</strong> 0.8 mm</div>
+                    <div class="spec-item"><strong>Layer Height:</strong> 0.4 mm</div>
+                    <div class="spec-item"><strong>Filament Diameter:</strong> 1.75 mm</div>
+                    <div class="spec-item"><strong>Material:</strong> Overture TPU 80A</div>
+                    <div class="spec-item"><strong>Total Filament:</strong> 16.19 m</div>
+                    <div class="spec-item"><strong>Extrusion Segments:</strong> 25,940</div>
+                    <div class="spec-item"><strong>Actual Print Time:</strong> 24m 26s</div>
+                    <div class="spec-item"><strong>Movement Data:</strong> 10.2m (612s)</div>
+                </div>
+                <div class="note">
+                    <strong>Note:</strong> Chart shows volumetric extrusion rates during the movement phase. 
+                    Additional time (14+ minutes) comes from nozzle heating and START_PRINT macro execution.
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This report contains only processed analysis data. No proprietary G-code information is included.</p>
+        </div>
+    </div>
+    
+    <script>
+        const chartData = [
+            {time: 0.3, rate: 31.26}, {time: 0.7, rate: 31.26}, {time: 1.0, rate: 31.26},
+            {time: 1.5, rate: 31.27}, {time: 1.8, rate: 31.26}, {time: 2.2, rate: 31.26},
+            {time: 2.8, rate: 31.26}, {time: 3.5, rate: 31.26}, {time: 4.9, rate: 31.17},
+            {time: 5.2, rate: 31.26}, {time: 5.8, rate: 31.26}, {time: 6.4, rate: 31.26},
+            {time: 7.7, rate: 31.26}, {time: 9.1, rate: 31.26}, {time: 9.7, rate: 31.26},
+            {time: 11.0, rate: 31.26}, {time: 12.2, rate: 31.26}, {time: 26.9, rate: 45.59},
+            {time: 31.8, rate: 45.59}, {time: 37.4, rate: 45.59}, {time: 40.5, rate: 45.59},
+            {time: 44.1, rate: 45.59}, {time: 46.2, rate: 45.59}, {time: 55.4, rate: 45.59},
+            {time: 56.2, rate: 31.26}, {time: 56.5, rate: 31.25}, {time: 56.8, rate: 31.27},
+            {time: 57.1, rate: 45.59}, {time: 57.6, rate: 24.71}, {time: 58.1, rate: 36.2},
+            {time: 58.9, rate: 36.06}, {time: 60.1, rate: 36.03}, {time: 60.8, rate: 36.17},
+            {time: 61.6, rate: 36.05}, {time: 62.6, rate: 36.07}, {time: 63.3, rate: 8.44},
+            {time: 68.1, rate: 90.0}, {time: 77.3, rate: 90.0}, {time: 84.3, rate: 90.0},
+            {time: 86.9, rate: 15.17}, {time: 87.2, rate: 36.19}, {time: 87.5, rate: 36.1},
+            {time: 88.4, rate: 36.06}, {time: 89.7, rate: 36.03}, {time: 90.2, rate: 36.17},
+            {time: 91.0, rate: 36.04}, {time: 92.0, rate: 36.07}, {time: 92.6, rate: 15.53},
+            {time: 94.8, rate: 90.0}, {time: 102.7, rate: 90.0}, {time: 109.0, rate: 90.0},
+            {time: 113.5, rate: 90.0}, {time: 116.5, rate: 6.24}, {time: 150, rate: 62.53},
+            {time: 200, rate: 90.0}, {time: 300, rate: 62.53}, {time: 400, rate: 90.0},
+            {time: 500, rate: 56.77}, {time: 600, rate: 90.0}, {time: 606.7, rate: 20.45}
+        ];
+        
+        const trace = {
+            x: chartData.map(d => d.time),
+            y: chartData.map(d => d.rate),
+            mode: 'lines',
+            name: 'Volumetric Rate',
+            line: {
+                color: '#D4A574',
+                width: 2
+            },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(212, 165, 116, 0.2)',
+            hovertemplate: '<b>Time: %{x:.1f}s</b><br>Rate: %{y:.2f} mm³/s<extra></extra>'
+        };
+        
+        const layout = {
+            title: false,
+            xaxis: {
+                title: 'Time (seconds)',
+                gridcolor: 'rgba(212, 165, 116, 0.1)',
+                zeroline: false,
+                showgrid: true,
+                titlefont: { color: '#a8b8c8', size: 12 },
+                tickfont: { color: '#8a9aaa', size: 11 },
+            },
+            yaxis: {
+                title: 'Volumetric Rate (mm³/s)',
+                gridcolor: 'rgba(212, 165, 116, 0.1)',
+                zeroline: false,
+                showgrid: true,
+                titlefont: { color: '#a8b8c8', size: 12 },
+                tickfont: { color: '#8a9aaa', size: 11 },
+            },
+            plot_bgcolor: '#1a2332',
+            paper_bgcolor: '#1a2332',
+            font: { family: 'Arial, sans-serif', color: '#a8b8c8' },
+            margin: { l: 60, r: 40, t: 10, b: 50 },
+            hovermode: 'x unified',
+            dragmode: 'zoom',
+            showlegend: false
+        };
+        
+        const config = {
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d']
+        };
+        
+        Plotly.newPlot('extrusionChart', [trace], layout, config);
+    </script>
+</body>
+</html>

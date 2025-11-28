@@ -1,5 +1,7 @@
 # gm-tc.tech Project Rules
 
+⚠️ **CRITICAL**: Read "CRITICAL SAFETY RULES" section before ANY destructive operations!
+
 ## Project Overview
 - **Website**: gm-tc.tech
 - **Hosting**: Uberspace (U7)
@@ -75,6 +77,63 @@ gm-tc/
 │   └── config/
 └── docs/                 # Project documentation
 ```
+
+## CRITICAL SAFETY RULES - MUST FOLLOW
+
+### Before ANY Destructive Operation
+
+**Destructive operations include:**
+- `delete_file`, `rm`, `rm -rf`, `git rm`
+- Deleting directories or files
+- Modifying `.gitignore` to exclude tracked files
+- Force operations (`git reset --hard`, `git push --force`)
+
+**MANDATORY PRE-DESTRUCTION CHECKLIST:**
+
+1. **Check git status** - See what's uncommitted:
+   ```bash
+   git status
+   ```
+
+2. **Create recovery point** - Commit current state BEFORE deleting:
+   ```bash
+   git add -A
+   git commit -m "backup: before [operation description]"
+   ```
+   OR create backup branch:
+   ```bash
+   git branch backup-before-[operation]
+   ```
+
+3. **Verify what will be deleted** - List files/dirs before removing:
+   ```bash
+   find [path] -type f  # Show what exists
+   git ls-files [path]  # Show what's tracked
+   ```
+
+4. **Only then proceed** with destructive operation
+
+### Read-Only Operations (No Permission Needed)
+
+These are SAFE and don't require asking:
+- `read_file`, `grep`, `list_dir`
+- `git status`, `git log`, `git diff`
+- `codebase_search`, `glob_file_search`
+- Any operation that only READS, doesn't modify
+
+### Recovery Protocol
+
+If something goes wrong:
+1. **Immediate recovery**: `git reset --hard HEAD~1` (undoes last commit)
+2. **Check backup branch**: `git branch` (lists backup branches)
+3. **Restore from backup**: `git checkout backup-before-[operation]`
+
+### Exception: User Explicitly Requests Deletion
+
+If user explicitly says "delete X" or "remove Y", still:
+- Create backup commit first
+- Then proceed with deletion
+- This ensures recovery is always possible
 
 ## Important Notes
 
