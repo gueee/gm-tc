@@ -134,13 +134,22 @@ export default function ChartBlockEditor({
         return
       }
       
-      // Sample data if too large (keep every Nth point for > 5000 points)
+      // Sample data if too large - use LTTB-like approach to preserve shape
+      // Target ~10000 points for smooth charts while keeping all time range
+      const MAX_POINTS = 10000
       let finalX = x
       let finalY = y
-      if (x.length > 5000) {
-        const step = Math.ceil(x.length / 5000)
-        finalX = x.filter((_, i) => i % step === 0)
-        finalY = y.filter((_, i) => i % step === 0)
+      if (x.length > MAX_POINTS) {
+        const step = Math.ceil(x.length / MAX_POINTS)
+        // Always keep first and last points to preserve time range
+        finalX = [x[0]]
+        finalY = [y[0]]
+        for (let i = step; i < x.length - 1; i += step) {
+          finalX.push(x[i])
+          finalY.push(y[i])
+        }
+        finalX.push(x[x.length - 1])
+        finalY.push(y[y.length - 1])
       }
       
       applyData(finalX, finalY, selectedXField, selectedYField)
