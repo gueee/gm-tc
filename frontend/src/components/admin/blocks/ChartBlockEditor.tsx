@@ -21,13 +21,13 @@ export default function ChartBlockEditor({
 }: BlockComponentProps<ChartBlock>) {
   const [isPreview, setIsPreview] = useState(false)
   const [parseError, setParseError] = useState<string | null>(null)
-  
+
   // Modal state for field selection
   const [showFieldModal, setShowFieldModal] = useState(false)
   const [pendingData, setPendingData] = useState<ParsedJsonData | null>(null)
   const [selectedXField, setSelectedXField] = useState('')
   const [selectedYField, setSelectedYField] = useState('')
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Parse and validate JSON data
@@ -35,20 +35,20 @@ export default function ChartBlockEditor({
     try {
       const trimmed = content.trim()
       if (!trimmed.startsWith('[')) return null
-      
+
       const parsed = JSON.parse(trimmed)
       if (!Array.isArray(parsed) || parsed.length === 0) return null
-      
+
       const firstObj = parsed[0]
       if (typeof firstObj !== 'object' || firstObj === null) return null
-      
+
       // Get all numeric fields
-      const fields = Object.keys(firstObj).filter(key => 
+      const fields = Object.keys(firstObj).filter(key =>
         typeof firstObj[key] === 'number'
       )
-      
+
       if (fields.length < 2) return null
-      
+
       return { data: parsed, fields }
     } catch {
       return null
@@ -60,54 +60,65 @@ export default function ChartBlockEditor({
     setParseError(null)
     const file = event.target.files?.[0]
     if (!file) return
-    
+
     const reader = new FileReader()
     reader.onload = (e) => {
       const content = e.target?.result as string
       const result = parseJsonData(content)
-      
+
       if (result) {
-        // Open modal for field selection
+        // JSON - Open modal for field selection
         setPendingData(result)
         setSelectedXField(result.fields[0])
         setSelectedYField(result.fields.length > 1 ? result.fields[1] : result.fields[0])
         setShowFieldModal(true)
       } else {
-        // Try CSV parsing
+        // Try CSV parsing - also opens field selection modal
         const csvResult = parseCSV(content)
         if (csvResult) {
-          applyData(csvResult.x, csvResult.y, 'X', 'Y')
+          setPendingData(csvResult)
+          setSelectedXField(csvResult.fields[0])
+          setSelectedYField(csvResult.fields.length > 1 ? csvResult.fields[1] : csvResult.fields[0])
+          setShowFieldModal(true)
         } else {
-          setParseError('Could not parse file. Ensure JSON array of objects with numeric fields, or CSV with x,y columns.')
+          setParseError('Could not parse file. Ensure JSON array of objects with numeric fields, or CSV with header row.')
         }
       }
     }
     reader.onerror = () => setParseError('Failed to read file')
     reader.readAsText(file)
-    
+
     // Reset input for re-upload
     event.target.value = ''
   }, [parseJsonData])
 
-  // Parse CSV data
-  const parseCSV = useCallback((content: string): { x: number[], y: number[] } | null => {
+  // Parse CSV data - returns parsed data with field names for selection
+  const parseCSV = useCallback((content: string): ParsedJsonData | null => {
     const lines = content.trim().split('\n')
-    const x: number[] = []
-    const y: number[] = []
-    
-    for (const line of lines) {
-      const parts = line.split(',').map(s => s.trim())
-      if (parts.length >= 2) {
-        const xVal = parseFloat(parts[0])
-        const yVal = parseFloat(parts[1])
-        if (!isNaN(xVal) && !isNaN(yVal)) {
-          x.push(xVal)
-          y.push(yVal)
-        }
+    if (lines.length < 2) return null
+
+    // First line is header
+    const headers = lines[0].split(',').map(s => s.trim())
+    const data: Record<string, unknown>[] = []
+
+    // Parse data rows
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',').map(s => s.trim())
+      if (parts.length >= headers.length) {
+        const row: Record<string, unknown> = {}
+        headers.forEach((header, idx) => {
+          const val = parseFloat(parts[idx])
+          if (!isNaN(val)) row[header] = val
+        })
+        if (Object.keys(row).length > 0) data.push(row)
       }
     }
-    
-    return x.length > 0 ? { x, y } : null
+
+    if (data.length === 0) return null
+
+    // Get numeric fields
+    const fields = headers.filter(h => typeof data[0][h] === 'number')
+    return fields.length >= 2 ? { data, fields } : null
   }, [])
 
   // Apply data to block - this is the ONLY place we call onUpdate for data
@@ -124,16 +135,16 @@ export default function ChartBlockEditor({
   // Confirm field selection from modal
   const confirmFieldSelection = useCallback(() => {
     if (!pendingData || !selectedXField || !selectedYField) return
-    
+
     try {
       const x = pendingData.data.map(p => Number(p[selectedXField]))
       const y = pendingData.data.map(p => Number(p[selectedYField]))
-      
+
       if (x.some(isNaN) || y.some(isNaN)) {
         setParseError('Selected fields contain non-numeric values')
         return
       }
-      
+
       // Sample data if too large - use LTTB-like approach to preserve shape
       // Target ~10000 points for smooth charts while keeping all time range
       const MAX_POINTS = 10000
@@ -151,9 +162,9 @@ export default function ChartBlockEditor({
         finalX.push(x[x.length - 1])
         finalY.push(y[y.length - 1])
       }
-      
+
       applyData(finalX, finalY, selectedXField, selectedYField)
-      
+
       // Close modal and clear pending data
       setShowFieldModal(false)
       setPendingData(null)
@@ -183,7 +194,7 @@ export default function ChartBlockEditor({
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <p className="text-sm text-steel-400 mb-4">
               <CheckCircle className="w-4 h-4 inline mr-1 text-green-400" />
               Loaded {pendingData.data.length.toLocaleString()} data points
@@ -191,7 +202,7 @@ export default function ChartBlockEditor({
                 <span className="text-amber-400"> (will sample to ~5000 for performance)</span>
               )}
             </p>
-            
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-steel-300 mb-2">X Axis (horizontal)</label>
@@ -218,11 +229,11 @@ export default function ChartBlockEditor({
                 </select>
               </div>
             </div>
-            
+
             <p className="text-xs text-steel-500 mb-4">
               Available fields: {pendingData.fields.join(', ')}
             </p>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={cancelFieldSelection}
@@ -270,10 +281,13 @@ export default function ChartBlockEditor({
                 x: d.x,
                 y: d.y,
                 type: block.chartType === 'bar' ? 'bar' : 'scatter',
-                mode: block.chartType === 'scatter' ? 'markers' : 'lines+markers',
+                mode: block.chartType === 'scatter' ? 'markers' : 'lines',
                 name: d.name || 'Data',
-                marker: { color: '#D97706' },
-                line: { color: '#D97706' },
+                line: { color: '#D4A574', width: 2 },
+                marker: { color: '#D4A574', size: 4 },
+                fill: block.chartType === 'line' ? 'tozeroy' : undefined,
+                fillcolor: 'rgba(212, 165, 116, 0.15)',
+                hovertemplate: `<b>${block.xAxisLabel || 'X'}: %{x}</b><br>${block.yAxisLabel || 'Y'}: %{y}<extra></extra>`,
               }))}
               layout={{
                 title: block.title ? {
@@ -281,26 +295,35 @@ export default function ChartBlockEditor({
                   font: { color: '#fff', size: 16 },
                 } : undefined,
                 paper_bgcolor: 'transparent',
-                plot_bgcolor: '#1a1f2e',
-                font: { color: '#9ca3af' },
+                plot_bgcolor: '#1a2332',
+                font: { color: '#a8b8c8', family: 'Inter, Arial, sans-serif' },
                 xaxis: {
-                  title: block.xAxisLabel ? { text: block.xAxisLabel } : undefined,
-                  gridcolor: '#374151',
-                  zerolinecolor: '#374151',
+                  title: block.xAxisLabel ? { text: block.xAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+                  gridcolor: 'rgba(212, 165, 116, 0.1)',
+                  zeroline: false,
+                  showgrid: true,
+                  tickfont: { color: '#8a9aaa', size: 11 },
                 },
                 yaxis: {
-                  title: block.yAxisLabel ? { text: block.yAxisLabel } : undefined,
-                  gridcolor: '#374151',
-                  zerolinecolor: '#374151',
+                  title: block.yAxisLabel ? { text: block.yAxisLabel, font: { color: '#a8b8c8', size: 12 } } : undefined,
+                  gridcolor: 'rgba(212, 165, 116, 0.1)',
+                  zeroline: false,
+                  showgrid: true,
+                  tickfont: { color: '#8a9aaa', size: 11 },
                 },
                 showlegend: block.showLegend,
-                margin: { l: 60, r: 30, t: 50, b: 50 },
+                margin: { l: 60, r: 40, t: 50, b: 50 },
+                hovermode: 'x unified',
+                dragmode: 'zoom',
+                autosize: true,
               }}
               config={{
+                responsive: true,
                 displayModeBar: true,
-                scrollZoom: true,
-                modeBarButtonsToAdd: ['pan2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'resetScale2d'],
                 displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
+                scrollZoom: true,
+                doubleClick: 'reset',
               }}
               style={{ width: '100%', height: '400px' }}
               useResizeHandler
@@ -392,7 +415,7 @@ export default function ChartBlockEditor({
                 <FileUp className="w-5 h-5" />
                 <span>Click to upload JSON or CSV file</span>
               </button>
-              
+
               <p className="text-xs text-steel-500 mt-2 text-center">
                 JSON: array of objects with numeric fields • CSV: x,y values per line
               </p>

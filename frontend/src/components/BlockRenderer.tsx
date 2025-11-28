@@ -168,7 +168,7 @@ function ChartBlockView({ block }: { block: ChartBlock }) {
             x: d.x,
             y: d.y,
             type: block.chartType === 'bar' ? 'bar' : 'scatter',
-            mode: block.chartType === 'scatter' ? 'markers' : 'lines+markers',
+            mode: block.chartType === 'scatter' ? 'markers' : 'lines',
             name: d.name || 'Data',
             marker: { color: '#D4A574' },
             line: { color: '#D4A574', width: 2 },
