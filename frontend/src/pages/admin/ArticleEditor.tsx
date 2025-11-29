@@ -141,7 +141,12 @@ export default function ArticleEditor() {
         // Navigate to edit view
         setTimeout(() => navigate(`/admin/articles/${created.id}`), 1000)
       } else {
-        await updateContent(Number(id), payload)
+        const contentId = parseInt(id || '', 10)
+        if (isNaN(contentId)) {
+          setMessage({ type: 'error', text: 'Invalid article ID' })
+          return
+        }
+        await updateContent(contentId, payload)
         setMessage({ type: 'success', text: 'Article saved successfully!' })
       }
     } catch (error: any) {
