@@ -189,11 +189,11 @@ export default function ArticleList() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <a
-                          href={`/article/${article.slug}`}
+                          href={`/article/${article.slug}?preview=true`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 text-steel-400 hover:text-copper-400 transition-colors"
-                          title="View"
+                          title="Preview"
                         >
                           <Eye className="w-4 h-4" />
                         </a>
