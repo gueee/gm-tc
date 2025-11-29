@@ -81,6 +81,15 @@ export async function getCategoryBySlug(slug: string): Promise<Category> {
 }
 
 // Admin functions
+export async function getAdminContent(params?: {
+  page?: number
+  limit?: number
+  status_filter?: string
+}): Promise<ContentAPIResponse> {
+  const response = await api.get<ContentAPIResponse>('/content/admin/list', { params })
+  return response.data
+}
+
 export async function createContent(data: Partial<BlogPost>): Promise<BlogPost> {
   const response = await api.post<BlogPost>('/content/admin', data)
   return response.data

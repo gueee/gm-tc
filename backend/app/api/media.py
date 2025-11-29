@@ -44,31 +44,31 @@ async def upload_media(
             status_code=400,
             detail=f"File type not allowed. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
         )
-    
+
     # Read file content
     content = await file.read()
-    
+
     # Check file size
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400,
             detail=f"File too large. Maximum size: {MAX_FILE_SIZE // 1024 // 1024}MB"
         )
-    
+
     # Ensure upload directory exists
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    
+
     # Generate safe filename
     safe_filename = get_safe_filename(file.filename or "image.jpg")
     file_path = os.path.join(UPLOAD_DIR, safe_filename)
-    
+
     # Save file
     with open(file_path, "wb") as f:
         f.write(content)
-    
+
     # Return URL
     url = f"/uploads/{safe_filename}"
-    
+
     return JSONResponse({
         "url": url,
         "filename": safe_filename,

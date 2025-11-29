@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Plus, Search, Edit2, Trash2, Eye, Filter } from 'lucide-react'
-import { getContent, getCategories, deleteContent, BlogPost, Category } from '../../services/blog'
+import { getAdminContent, getCategories, deleteContent, BlogPost, Category } from '../../services/blog'
 
 type StatusFilter = 'all' | 'published' | 'draft'
 
@@ -22,7 +22,7 @@ export default function ArticleList() {
   async function fetchData() {
     try {
       const [articlesData, categoriesData] = await Promise.all([
-        getContent({ limit: 100 }),
+        getAdminContent({ limit: 100 }),
         getCategories(false),
       ])
       setArticles(articlesData.items)
