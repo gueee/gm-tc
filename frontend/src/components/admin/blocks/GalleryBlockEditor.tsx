@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Upload, Loader2, X, Plus, GripVertical } from 'lucide-react'
+import { Loader2, X, Plus } from 'lucide-react'
 import { GalleryBlock, GalleryImage, BlockComponentProps } from './types'
 import BlockWrapper from './BlockWrapper'
 import api from '../../../services/api'

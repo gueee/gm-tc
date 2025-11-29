@@ -1,4 +1,4 @@
-import { Type, BarChart3, Image, Images, Code } from 'lucide-react'
+import { Type, BarChart3, Image, LayoutGrid, Code } from 'lucide-react'
 import { Block, BlockType, TextBlock, ChartBlock, ImageBlock, GalleryBlock, CodeBlock } from './types'
 import TextBlockEditor from './TextBlockEditor'
 import ChartBlockEditor from './ChartBlockEditor'
@@ -15,7 +15,7 @@ const BLOCK_TYPES: { type: BlockType; icon: typeof Type; label: string }[] = [
   { type: 'text', icon: Type, label: 'Text' },
   { type: 'chart', icon: BarChart3, label: 'Chart' },
   { type: 'image', icon: Image, label: 'Image' },
-  { type: 'gallery', icon: Images, label: 'Gallery' },
+  { type: 'gallery', icon: LayoutGrid, label: 'Gallery' },
   { type: 'code', icon: Code, label: 'Code' },
 ]
 
