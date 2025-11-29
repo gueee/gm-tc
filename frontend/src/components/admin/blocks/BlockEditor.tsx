@@ -1,8 +1,9 @@
-import { Type, BarChart3, Image, Code } from 'lucide-react'
-import { Block, BlockType, TextBlock, ChartBlock, ImageBlock, CodeBlock } from './types'
+import { Type, BarChart3, Image, Images, Code } from 'lucide-react'
+import { Block, BlockType, TextBlock, ChartBlock, ImageBlock, GalleryBlock, CodeBlock } from './types'
 import TextBlockEditor from './TextBlockEditor'
 import ChartBlockEditor from './ChartBlockEditor'
 import ImageBlockEditor from './ImageBlockEditor'
+import GalleryBlockEditor from './GalleryBlockEditor'
 import CodeBlockEditor from './CodeBlockEditor'
 
 interface BlockEditorProps {
@@ -14,6 +15,7 @@ const BLOCK_TYPES: { type: BlockType; icon: typeof Type; label: string }[] = [
   { type: 'text', icon: Type, label: 'Text' },
   { type: 'chart', icon: BarChart3, label: 'Chart' },
   { type: 'image', icon: Image, label: 'Image' },
+  { type: 'gallery', icon: Images, label: 'Gallery' },
   { type: 'code', icon: Code, label: 'Code' },
 ]
 
@@ -48,6 +50,8 @@ function createEmptyBlock(type: BlockType): Block {
       } as ChartBlock
     case 'image':
       return { id, type: 'image', url: '', alt: '', caption: '' } as ImageBlock
+    case 'gallery':
+      return { id, type: 'gallery', images: [], columns: 3 } as GalleryBlock
     case 'code':
       return { id, type: 'code', language: 'javascript', code: '' } as CodeBlock
   }
@@ -99,6 +103,8 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
             return <ChartBlockEditor key={block.id} {...props} block={block} />
           case 'image':
             return <ImageBlockEditor key={block.id} {...props} block={block} />
+          case 'gallery':
+            return <GalleryBlockEditor key={block.id} {...props} block={block} />
           case 'code':
             return <CodeBlockEditor key={block.id} {...props} block={block} />
           default:

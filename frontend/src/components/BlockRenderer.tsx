@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import Plot from 'react-plotly.js'
 
 // Block types (matching admin blocks types)
-type BlockType = 'text' | 'chart' | 'image' | 'code'
+type BlockType = 'text' | 'chart' | 'image' | 'gallery' | 'code'
 
 interface BaseBlock {
   id: string
@@ -45,13 +45,25 @@ interface ImageBlock extends BaseBlock {
   caption?: string
 }
 
+interface GalleryImage {
+  url: string
+  alt: string
+  caption?: string
+}
+
+interface GalleryBlock extends BaseBlock {
+  type: 'gallery'
+  images: GalleryImage[]
+  columns?: 2 | 3 | 4
+}
+
 interface CodeBlock extends BaseBlock {
   type: 'code'
   language: string
   code: string
 }
 
-type Block = TextBlock | ChartBlock | ImageBlock | CodeBlock
+type Block = TextBlock | ChartBlock | ImageBlock | GalleryBlock | CodeBlock
 
 interface BlockRendererProps {
   blocks: Block[]
@@ -78,6 +90,7 @@ function RenderBlock({ block }: { block: Block }) {
     case 'text': return <TextBlockView block={block} />
     case 'chart': return <ChartBlockView block={block} />
     case 'image': return <ImageBlockView block={block} />
+    case 'gallery': return <GalleryBlockView block={block} />
     case 'code': return <CodeBlockView block={block} />
     default: return null
   }
@@ -277,6 +290,38 @@ function ImageBlockView({ block }: { block: ImageBlock }) {
         <figcaption className="mt-3 text-center text-sm text-steel-400 italic">{block.caption}</figcaption>
       )}
     </figure>
+  )
+}
+
+// Gallery block
+function GalleryBlockView({ block }: { block: GalleryBlock }) {
+  if (!block.images || block.images.length === 0) return null
+  
+  const columns = block.columns || 3
+  
+  return (
+    <div className="my-6">
+      <div 
+        className="grid gap-4"
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+      >
+        {block.images.map((image, index) => (
+          <figure key={index} className="group relative overflow-hidden rounded-lg border border-steel-700">
+            <img 
+              src={image.url} 
+              alt={image.alt} 
+              className="w-full aspect-square object-cover transition-transform group-hover:scale-105" 
+              loading="lazy" 
+            />
+            {image.caption && (
+              <figcaption className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-sm text-white">
+                {image.caption}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+    </div>
   )
 }
 
