@@ -33,13 +33,18 @@ interface CategoryData {
   is_active: boolean
 }
 
-function slugify(text: string): string {
-  return text
+function slugify(text: string, finalCleanup = true): string {
+  let slug = text
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+  
+  // Only remove leading/trailing hyphens on final cleanup (blur)
+  if (finalCleanup) {
+    slug = slug.replace(/^-+|-+$/g, '')
+  }
+  return slug
 }
 
 export default function CategoryEditor() {
@@ -102,7 +107,13 @@ export default function CategoryEditor() {
 
   function handleSlugChange(slug: string) {
     setAutoSlug(false)
-    setCategory((prev) => ({ ...prev, slug: slugify(slug) }))
+    // Don't remove trailing hyphens while typing
+    setCategory((prev) => ({ ...prev, slug: slugify(slug, false) }))
+  }
+
+  function handleSlugBlur() {
+    // Clean up trailing hyphens when user leaves the field
+    setCategory((prev) => ({ ...prev, slug: slugify(prev.slug, true) }))
   }
 
   async function handleSave() {
@@ -212,6 +223,7 @@ export default function CategoryEditor() {
               type="text"
               value={category.slug}
               onChange={(e) => handleSlugChange(e.target.value)}
+              onBlur={handleSlugBlur}
               className="w-full px-4 py-3 bg-steel-900 border border-steel-700 rounded-lg text-white placeholder-steel-500 focus:outline-none focus:ring-2 focus:ring-copper-400 font-mono text-sm"
               placeholder="category-slug"
             />
