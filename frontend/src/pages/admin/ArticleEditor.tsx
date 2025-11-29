@@ -20,7 +20,7 @@ function slugify(text: string, finalCleanup = true): string {
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
-  
+
   // Only remove leading/trailing hyphens on final cleanup (blur)
   if (finalCleanup) {
     slug = slug.replace(/^-+|-+$/g, '')
@@ -75,7 +75,7 @@ export default function ArticleEditor() {
           slug: data.slug,
           excerpt: data.excerpt || '',
           status: data.status as 'draft' | 'published',
-          category_id: data.category_id,
+          category_id: data.category_id ? Number(data.category_id) : undefined,
           content: data.content || '',
           blocks: parsedBlocks,
         })
@@ -146,13 +146,17 @@ export default function ArticleEditor() {
       }
     } catch (error: any) {
       console.error('Failed to save article:', error)
+      console.error('Response data:', error.response?.data)
       let errorMsg = 'Failed to save article'
       const detail = error.response?.data?.detail
       if (typeof detail === 'string') {
         errorMsg = detail
       } else if (Array.isArray(detail)) {
-        // Pydantic validation errors
-        errorMsg = detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ')
+        // Pydantic validation errors - show field location and message
+        errorMsg = detail.map((e: any) => {
+          const loc = e.loc ? e.loc.join('.') : 'unknown'
+          return `${loc}: ${e.msg}`
+        }).join('; ')
       } else if (detail) {
         errorMsg = JSON.stringify(detail)
       }
@@ -258,18 +262,20 @@ export default function ArticleEditor() {
           <div>
             <label className="block text-sm font-medium text-steel-300 mb-2">Category</label>
             <select
-              value={article.category_id || ''}
-              onChange={(e) =>
+              value={article.category_id !== undefined ? String(article.category_id) : ''}
+              onChange={(e) => {
+                const val = e.target.value
+                const numVal = val ? parseInt(val, 10) : undefined
                 setArticle((prev) => ({
                   ...prev,
-                  category_id: e.target.value ? Number(e.target.value) : undefined,
+                  category_id: numVal,
                 }))
-              }
+              }}
               className="w-full px-4 py-3 bg-steel-900 border border-steel-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-copper-400"
             >
               <option value="">No category</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
+                <option key={cat.id} value={String(cat.id)}>
                   {cat.name}
                 </option>
               ))}

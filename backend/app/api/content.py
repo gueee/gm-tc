@@ -193,6 +193,8 @@ async def admin_create_content(
     """
     Admin: Create new content.
     """
+    import logging
+    logging.info(f"Creating content: {content_data.model_dump()}")
     # Check for duplicate slug
     existing = db.query(Content).filter(Content.slug == content_data.slug).first()
     if existing:

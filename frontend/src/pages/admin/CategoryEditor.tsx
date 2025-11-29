@@ -39,7 +39,7 @@ function slugify(text: string, finalCleanup = true): string {
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
-  
+
   // Only remove leading/trailing hyphens on final cleanup (blur)
   if (finalCleanup) {
     slug = slug.replace(/^-+|-+$/g, '')
