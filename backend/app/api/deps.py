@@ -93,3 +93,4 @@ def get_optional_user(
     user_id = payload.get("sub")
     return db.query(User).filter(User.id == user_id, User.is_active == True).first()
 
+

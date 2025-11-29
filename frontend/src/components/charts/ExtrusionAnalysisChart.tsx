@@ -172,3 +172,4 @@ function SpecItem({ label, value }: { label: string; value: string }) {
   )
 }
 
+

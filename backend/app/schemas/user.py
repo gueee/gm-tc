@@ -48,3 +48,4 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+

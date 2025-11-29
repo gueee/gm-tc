@@ -128,3 +128,4 @@ async def register_user(
 
     return user
 
+
