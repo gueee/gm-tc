@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Calendar, Eye, Tag } from 'lucide-react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, Calendar, Eye, Tag, AlertTriangle } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
-import { getContentBySlug, BlogPost } from '../services/blog'
+import { getContentBySlug, previewContentBySlug, BlogPost } from '../services/blog'
 import BlockRenderer from '../components/BlockRenderer'
 
 // Import embedded components (legacy - for backwards compatibility)
@@ -15,6 +15,8 @@ const EMBEDDED_COMPONENTS: Record<string, React.FC> = {
 
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>()
+  const [searchParams] = useSearchParams()
+  const isPreview = searchParams.get('preview') === 'true'
   const [article, setArticle] = useState<BlogPost | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,7 +29,10 @@ export default function ArticlePage() {
       setError(null)
 
       try {
-        const data = await getContentBySlug(slug)
+        // Use preview endpoint if preview mode, otherwise public endpoint
+        const data = isPreview 
+          ? await previewContentBySlug(slug)
+          : await getContentBySlug(slug)
         setArticle(data)
       } catch (err) {
         console.error('Failed to fetch article:', err)
@@ -37,7 +42,7 @@ export default function ArticlePage() {
       }
     }
     fetchArticle()
-  }, [slug])
+  }, [slug, isPreview])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -98,6 +103,20 @@ export default function ArticlePage() {
 
   return (
     <article className="py-12">
+      {/* Preview Banner */}
+      {isPreview && article?.status !== 'published' && (
+        <div className="bg-yellow-500/10 border-b border-yellow-500/20 mb-6">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center gap-2 text-yellow-400">
+              <AlertTriangle className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                Preview Mode — This article is not published yet
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Link */}
         <Link

@@ -200,9 +200,9 @@ export default function ArticleEditor() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!isNew && (
+          {!isNew && article.slug && (
             <a
-              href={`/article/${article.slug}`}
+              href={`/article/${article.slug}?preview=true`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 bg-steel-800 text-steel-300 rounded-lg hover:bg-steel-700 transition-colors"

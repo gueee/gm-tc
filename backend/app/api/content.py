@@ -153,6 +153,26 @@ async def get_content_by_id(
     return content
 
 
+@router.get("/content/preview/{slug}", response_model=ContentResponse)
+async def preview_content_by_slug(
+    slug: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Admin: Preview content by slug (includes drafts, no view count increment).
+    """
+    content = db.query(Content).filter(Content.slug == slug).first()
+
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content not found"
+        )
+
+    return content
+
+
 @router.get("/content/admin/list", response_model=ContentListResponse)
 async def admin_list_content(
     page: int = Query(1, ge=1),

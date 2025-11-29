@@ -63,6 +63,11 @@ export async function getContentBySlug(slug: string): Promise<BlogPost> {
   return response.data
 }
 
+export async function previewContentBySlug(slug: string): Promise<BlogPost> {
+  const response = await api.get<BlogPost>(`/content/preview/${slug}`)
+  return response.data
+}
+
 export async function getContentById(id: number): Promise<BlogPost> {
   const response = await api.get<BlogPost>(`/content/by-id/${id}`)
   return response.data
