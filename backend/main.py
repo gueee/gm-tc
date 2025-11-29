@@ -14,10 +14,11 @@ from app.db.session import engine, Base
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Import routers (will be created next)
+# Import routers
 from app.api.auth import router as auth_router
 from app.api.content import router as content_router
 from app.api.homepage import router as homepage_router
+from app.api.media import router as media_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -43,6 +44,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix=settings.API_PREFIX)
 app.include_router(content_router, prefix=settings.API_PREFIX)
 app.include_router(homepage_router, prefix=settings.API_PREFIX)
+app.include_router(media_router, prefix=settings.API_PREFIX)
 
 
 # Custom exception handler for validation errors - logs details
