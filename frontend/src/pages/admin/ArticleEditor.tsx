@@ -107,14 +107,21 @@ export default function ArticleEditor() {
     setMessage(null)
 
     try {
-      const payload = {
+      // Build payload, only include category_id if it's a valid number
+      const payload: Record<string, unknown> = {
         title: article.title,
         slug: article.slug,
-        excerpt: article.excerpt || undefined,
         status: article.status,
-        category_id: article.category_id ?? undefined,
         content: article.content,
-        blocks: article.blocks as unknown as Record<string, unknown>,
+        blocks: article.blocks,
+      }
+      
+      // Only add optional fields if they have values
+      if (article.excerpt) {
+        payload.excerpt = article.excerpt
+      }
+      if (typeof article.category_id === 'number') {
+        payload.category_id = article.category_id
       }
 
       if (isNew) {

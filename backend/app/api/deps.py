@@ -94,3 +94,4 @@ def get_optional_user(
     return db.query(User).filter(User.id == user_id, User.is_active == True).first()
 
 
+
