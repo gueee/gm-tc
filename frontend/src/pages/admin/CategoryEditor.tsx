@@ -50,7 +50,7 @@ function slugify(text: string, finalCleanup = true): string {
 export default function CategoryEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const isNew = id === 'new'
+  const isNew = !id || id === 'new'
 
   const [isLoading, setIsLoading] = useState(!isNew)
   const [isSaving, setIsSaving] = useState(false)
