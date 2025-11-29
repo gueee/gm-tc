@@ -63,6 +63,27 @@ async def list_content(
     )
 
 
+@router.get("/content/preview/{slug}", response_model=ContentResponse)
+async def preview_content_by_slug(
+    slug: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Admin: Preview content by slug (includes drafts, no view count increment).
+    Must be defined BEFORE /content/{slug} to avoid route conflict.
+    """
+    content = db.query(Content).filter(Content.slug == slug).first()
+
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Content not found"
+        )
+
+    return content
+
+
 @router.get("/content/{slug}", response_model=ContentResponse)
 async def get_content_by_slug(
     slug: str,
@@ -143,26 +164,6 @@ async def get_content_by_id(
     Admin: Get content by ID (includes drafts).
     """
     content = db.query(Content).filter(Content.id == content_id).first()
-
-    if not content:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Content not found"
-        )
-
-    return content
-
-
-@router.get("/content/preview/{slug}", response_model=ContentResponse)
-async def preview_content_by_slug(
-    slug: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Admin: Preview content by slug (includes drafts, no view count increment).
-    """
-    content = db.query(Content).filter(Content.slug == slug).first()
 
     if not content:
         raise HTTPException(

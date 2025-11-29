@@ -30,7 +30,7 @@ export default function ArticlePage() {
 
       try {
         // Use preview endpoint if preview mode, otherwise public endpoint
-        const data = isPreview 
+        const data = isPreview
           ? await previewContentBySlug(slug)
           : await getContentBySlug(slug)
         setArticle(data)
@@ -59,18 +59,18 @@ export default function ArticlePage() {
   // Parse blocks from article data
   const blocks = useMemo(() => {
     if (!article?.blocks) return null
-    
+
     // Handle array directly
     if (Array.isArray(article.blocks)) {
       return article.blocks.length > 0 ? article.blocks : null
     }
-    
+
     // Handle wrapped format: { blocks: [...] }
     if (typeof article.blocks === 'object' && 'blocks' in article.blocks) {
       const wrapped = article.blocks as { blocks: unknown[] }
       return Array.isArray(wrapped.blocks) && wrapped.blocks.length > 0 ? wrapped.blocks : null
     }
-    
+
     return null
   }, [article?.blocks])
 
