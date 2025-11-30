@@ -296,22 +296,22 @@ function ImageBlockView({ block }: { block: ImageBlock }) {
 // Gallery block
 function GalleryBlockView({ block }: { block: GalleryBlock }) {
   if (!block.images || block.images.length === 0) return null
-  
+
   const columns = block.columns || 3
-  
+
   return (
     <div className="my-6">
-      <div 
+      <div
         className="grid gap-4"
         style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
       >
         {block.images.map((image, index) => (
           <figure key={index} className="group relative overflow-hidden rounded-lg border border-steel-700">
-            <img 
-              src={image.url} 
-              alt={image.alt} 
-              className="w-full aspect-square object-cover transition-transform group-hover:scale-105" 
-              loading="lazy" 
+            <img
+              src={image.url}
+              alt={image.alt}
+              className="w-full aspect-square object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
             />
             {image.caption && (
               <figcaption className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-sm text-white">
