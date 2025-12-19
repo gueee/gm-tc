@@ -1,4 +1,4 @@
-export type BlockType = 'text' | 'chart' | 'image' | 'gallery' | 'code'
+export type BlockType = 'text' | 'chart' | 'image' | 'gallery' | 'code' | 'table'
 
 export interface BaseBlock {
   id: string
@@ -82,7 +82,17 @@ export interface CodeBlock extends BaseBlock {
   code: string
 }
 
-export type Block = TextBlock | ChartBlock | ImageBlock | GalleryBlock | CodeBlock
+export interface TableBlock extends BaseBlock {
+  type: 'table'
+  caption?: string
+  headers: string[]
+  rows: string[][]
+  striped?: boolean
+  bordered?: boolean
+  compact?: boolean
+}
+
+export type Block = TextBlock | ChartBlock | ImageBlock | GalleryBlock | CodeBlock | TableBlock
 
 export interface BlockEditorProps {
   blocks: Block[]

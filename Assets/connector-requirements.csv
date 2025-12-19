@@ -1,0 +1,9 @@
+Requirement,Industrial,3D Printer,Status
+Connector Type,Sealed/Keyed D-Sub M12,JST XH/PH,FAIL
+Sealing Rating,IP67 minimum,IP00-IP20,FAIL
+Locking Mechanism,Keyed or latched,Friction fit,FAIL
+Mating Cycles,10000+,100-500,FAIL
+Contact Material,Gold-plated 0.5µm,Tin-plated,PARTIAL
+Contact Resistance,≤50mΩ initial,Unknown,FAIL
+Vibration Rated,IEC 60068-2-6,Not tested,FAIL
+Environmental Hardness,Rated for vibration/moisture,Benchtop only,FAIL

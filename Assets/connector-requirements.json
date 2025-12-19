@@ -1,0 +1,50 @@
+[
+  {
+    "Requirement": "Connector Type",
+    "Industrial": "Sealed/Keyed D-Sub M12",
+    "3D Printer": "JST XH/PH",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Sealing Rating",
+    "Industrial": "IP67 minimum",
+    "3D Printer": "IP00-IP20",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Locking Mechanism",
+    "Industrial": "Keyed or latched",
+    "3D Printer": "Friction fit",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Mating Cycles",
+    "Industrial": "10000+",
+    "3D Printer": "100-500",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Contact Material",
+    "Industrial": "Gold-plated 0.5µm",
+    "3D Printer": "Tin-plated",
+    "Status": "PARTIAL"
+  },
+  {
+    "Requirement": "Contact Resistance",
+    "Industrial": "≤50mΩ initial",
+    "3D Printer": "Unknown",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Vibration Rated",
+    "Industrial": "IEC 60068-2-6",
+    "3D Printer": "Not tested",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Environmental Hardness",
+    "Industrial": "Rated for vibration/moisture",
+    "3D Printer": "Benchtop only",
+    "Status": "FAIL"
+  }
+]

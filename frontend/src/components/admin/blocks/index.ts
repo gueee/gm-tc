@@ -6,6 +6,7 @@ export { default as ChartBlockEditor } from './ChartBlockEditor'
 export { default as ImageBlockEditor } from './ImageBlockEditor'
 export { default as GalleryBlockEditor } from './GalleryBlockEditor'
 export { default as CodeBlockEditor } from './CodeBlockEditor'
+export { default as TableBlockEditor } from './TableBlockEditor'
 
 
 

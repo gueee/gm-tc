@@ -1,0 +1,8 @@
+Requirement,Industrial,3D Printer,Status
+Conductor Gauge,0.34-0.5 mm²,0.2 mm² (24 AWG),FAIL
+Twist Pitch,5-25 cm specified,Not specified,FAIL
+Shielding,85% minimum foil,Unshielded,FAIL
+Impedance,120Ω ± 10%,Unknown/unmeasured,FAIL
+Max Length 500kbps,130 m,1-2 m,PASS
+Operating Temp,-40 to +85°C,-20 to +60°C,PARTIAL
+EMI Rejection,>40 dB @ 1MHz,None,FAIL

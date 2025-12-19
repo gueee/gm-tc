@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import Plot from 'react-plotly.js'
 
 // Block types (matching admin blocks types)
-type BlockType = 'text' | 'chart' | 'image' | 'gallery' | 'code'
+type BlockType = 'text' | 'chart' | 'image' | 'gallery' | 'code' | 'table'
 
 interface BaseBlock {
   id: string
@@ -63,7 +63,17 @@ interface CodeBlock extends BaseBlock {
   code: string
 }
 
-type Block = TextBlock | ChartBlock | ImageBlock | GalleryBlock | CodeBlock
+interface TableBlock extends BaseBlock {
+  type: 'table'
+  caption?: string
+  headers: string[]
+  rows: string[][]
+  striped?: boolean
+  bordered?: boolean
+  compact?: boolean
+}
+
+type Block = TextBlock | ChartBlock | ImageBlock | GalleryBlock | CodeBlock | TableBlock
 
 interface BlockRendererProps {
   blocks: Block[]
@@ -92,6 +102,7 @@ function RenderBlock({ block }: { block: Block }) {
     case 'image': return <ImageBlockView block={block} />
     case 'gallery': return <GalleryBlockView block={block} />
     case 'code': return <CodeBlockView block={block} />
+    case 'table': return <TableBlockView block={block} />
     default: return null
   }
 }
@@ -337,6 +348,62 @@ function CodeBlockView({ block }: { block: CodeBlock }) {
       <pre className="bg-steel-900 rounded-b-lg p-4 overflow-x-auto border border-steel-700 border-t-0">
         <code className="text-sm text-steel-300 font-mono whitespace-pre">{block.code}</code>
       </pre>
+    </div>
+  )
+}
+
+// Table block
+function TableBlockView({ block }: { block: TableBlock }) {
+  if (!block.headers || block.headers.length === 0) return null
+
+  const cellPadding = block.compact ? 'px-3 py-1.5' : 'px-4 py-3'
+
+  return (
+    <div className="my-6 overflow-x-auto">
+      <table className={`w-full border-collapse ${block.bordered ? 'border border-steel-700' : ''}`}>
+        {block.caption && (
+          <caption className="text-sm text-steel-400 italic mb-3 text-left">
+            {block.caption}
+          </caption>
+        )}
+        <thead>
+          <tr className="bg-steel-800 border-b-2 border-copper-400/30">
+            {block.headers.map((header, idx) => (
+              <th
+                key={idx}
+                className={`${cellPadding} text-left text-sm font-semibold text-copper-400 ${
+                  block.bordered ? 'border border-steel-700' : ''
+                }`}
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {block.rows.map((row, rowIdx) => (
+            <tr
+              key={rowIdx}
+              className={`
+                border-b border-steel-700/50
+                ${block.striped && rowIdx % 2 === 1 ? 'bg-steel-800/50' : ''}
+                hover:bg-steel-800/70 transition-colors
+              `}
+            >
+              {row.map((cell, cellIdx) => (
+                <td
+                  key={cellIdx}
+                  className={`${cellPadding} text-sm text-steel-300 ${
+                    block.bordered ? 'border border-steel-700' : ''
+                  }`}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

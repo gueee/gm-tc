@@ -1,10 +1,11 @@
-import { Type, BarChart3, Image, LayoutGrid, Code } from 'lucide-react'
-import { Block, BlockType, TextBlock, ChartBlock, ImageBlock, GalleryBlock, CodeBlock } from './types'
+import { Type, BarChart3, Image, LayoutGrid, Code, Table } from 'lucide-react'
+import { Block, BlockType, TextBlock, ChartBlock, ImageBlock, GalleryBlock, CodeBlock, TableBlock } from './types'
 import TextBlockEditor from './TextBlockEditor'
 import ChartBlockEditor from './ChartBlockEditor'
 import ImageBlockEditor from './ImageBlockEditor'
 import GalleryBlockEditor from './GalleryBlockEditor'
 import CodeBlockEditor from './CodeBlockEditor'
+import TableBlockEditor from './TableBlockEditor'
 
 interface BlockEditorProps {
   blocks: Block[]
@@ -17,6 +18,7 @@ const BLOCK_TYPES: { type: BlockType; icon: typeof Type; label: string }[] = [
   { type: 'image', icon: Image, label: 'Image' },
   { type: 'gallery', icon: LayoutGrid, label: 'Gallery' },
   { type: 'code', icon: Code, label: 'Code' },
+  { type: 'table', icon: Table, label: 'Table' },
 ]
 
 function generateId(): string {
@@ -54,6 +56,17 @@ function createEmptyBlock(type: BlockType): Block {
       return { id, type: 'gallery', images: [], columns: 3 } as GalleryBlock
     case 'code':
       return { id, type: 'code', language: 'javascript', code: '' } as CodeBlock
+    case 'table':
+      return {
+        id,
+        type: 'table',
+        caption: '',
+        headers: ['Column 1', 'Column 2', 'Column 3'],
+        rows: [['', '', '']],
+        striped: true,
+        bordered: false,
+        compact: false,
+      } as TableBlock
   }
 }
 
@@ -107,6 +120,8 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
             return <GalleryBlockEditor key={block.id} {...props} block={block} />
           case 'code':
             return <CodeBlockEditor key={block.id} {...props} block={block} />
+          case 'table':
+            return <TableBlockEditor key={block.id} {...props} block={block} />
           default:
             return null
         }

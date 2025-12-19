@@ -1,0 +1,44 @@
+[
+  {
+    "Requirement": "Conductor Gauge",
+    "Industrial": "0.34-0.5 mm²",
+    "3D Printer": "0.2 mm² (24 AWG)",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Twist Pitch",
+    "Industrial": "5-25 cm specified",
+    "3D Printer": "Not specified",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Shielding",
+    "Industrial": "85% minimum foil",
+    "3D Printer": "Unshielded",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Impedance",
+    "Industrial": "120Ω ± 10%",
+    "3D Printer": "Unknown/unmeasured",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Max Length 500kbps",
+    "Industrial": "130 m",
+    "3D Printer": "1-2 m",
+    "Status": "PASS"
+  },
+  {
+    "Requirement": "Operating Temp",
+    "Industrial": "-40 to +85°C",
+    "3D Printer": "-20 to +60°C",
+    "Status": "PARTIAL"
+  },
+  {
+    "Requirement": "EMI Rejection",
+    "Industrial": ">40 dB @ 1MHz",
+    "3D Printer": "None",
+    "Status": "FAIL"
+  }
+]

@@ -1,0 +1,8 @@
+Requirement,Industrial,3D Printer,Status
+Termination Resistor,120Ω ± 1% at both ends,Absent or unclear,FAIL
+Placement,Bus endpoints only,Random or on-board,FAIL
+Grounding Topology,Star-point,Common bus,PARTIAL
+Shield Grounding,Specified method,None (no shield),FAIL
+Ground Plane Impedance,≤1Ω (multilayer),Single-layer PCB,FAIL
+Decoupling Strategy,Multiple values near nodes,Minimal,FAIL
+Transient Protection,CAN IC with ESD protection,Sometimes present,PARTIAL

@@ -9,15 +9,13 @@ from fastapi.responses import JSONResponse
 
 from app.api.deps import get_current_user
 from app.models.user import User
+from app.core.config import settings
 
 router = APIRouter(tags=["Media"])
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-
-# Upload directory - will be created if doesn't exist
-UPLOAD_DIR = "/var/www/virtual/gmtc/html/uploads"
 
 
 def get_safe_filename(original_filename: str) -> str:
@@ -56,11 +54,11 @@ async def upload_media(
         )
 
     # Ensure upload directory exists
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
     # Generate safe filename
     safe_filename = get_safe_filename(file.filename or "image.jpg")
-    file_path = os.path.join(UPLOAD_DIR, safe_filename)
+    file_path = os.path.join(settings.UPLOAD_DIR, safe_filename)
 
     # Save file
     with open(file_path, "wb") as f:

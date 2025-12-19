@@ -29,6 +29,9 @@ class Settings(BaseSettings):
         "https://www.gm-tc.tech",
     ]
 
+    # File uploads
+    UPLOAD_DIR: str = "./uploads"  # Override in production: /var/www/virtual/gmtc/html/uploads
+
     class Config:
         env_file = ".env"
         case_sensitive = True

@@ -1,0 +1,44 @@
+[
+  {
+    "Requirement": "Termination Resistor",
+    "Industrial": "120Ω ± 1% at both ends",
+    "3D Printer": "Absent or unclear",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Placement",
+    "Industrial": "Bus endpoints only",
+    "3D Printer": "Random or on-board",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Grounding Topology",
+    "Industrial": "Star-point",
+    "3D Printer": "Common bus",
+    "Status": "PARTIAL"
+  },
+  {
+    "Requirement": "Shield Grounding",
+    "Industrial": "Specified method",
+    "3D Printer": "None (no shield)",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Ground Plane Impedance",
+    "Industrial": "≤1Ω (multilayer)",
+    "3D Printer": "Single-layer PCB",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Decoupling Strategy",
+    "Industrial": "Multiple values near nodes",
+    "3D Printer": "Minimal",
+    "Status": "FAIL"
+  },
+  {
+    "Requirement": "Transient Protection",
+    "Industrial": "CAN IC with ESD protection",
+    "3D Printer": "Sometimes present",
+    "Status": "PARTIAL"
+  }
+]

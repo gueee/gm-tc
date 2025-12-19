@@ -1,9 +1,11 @@
 """
 GM-TC CMS - FastAPI Application Entry Point
 """
+import os
 import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -45,6 +47,11 @@ app.include_router(auth_router, prefix=settings.API_PREFIX)
 app.include_router(content_router, prefix=settings.API_PREFIX)
 app.include_router(homepage_router, prefix=settings.API_PREFIX)
 app.include_router(media_router, prefix=settings.API_PREFIX)
+
+# Mount uploads directory for static file serving
+# Create directory if it doesn't exist
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 
 # Custom exception handler for validation errors - logs details
