@@ -110,3 +110,8 @@ a {
 .custom-list .custom-list {
   @apply mt-2 mb-0;
 }
+
+/* Inline code in lists */
+.custom-list .inline-code {
+  @apply px-1.5 py-0.5 bg-steel-800 text-copper-400 rounded text-sm;
+}

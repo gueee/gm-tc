@@ -121,10 +121,32 @@ function getListMarker(type: ListType): string {
   switch (type) {
     case 'dash': return '–'
     case 'circle': return '○'
-    case 'number': return '•' // Will be replaced by CSS counter
-    case 'letter': return '•' // Will be replaced by CSS counter
+    case 'number': return '•'
+    case 'letter': return '•'
     default: return '•'
   }
+}
+
+// Process inline markdown (bold, italic, code, links) to HTML
+function processInlineMarkdown(text: string): string {
+  let result = text
+  
+  // Bold: **text** or __text__
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  result = result.replace(/__(.+?)__/g, '<strong>$1</strong>')
+  
+  // Italic: *text* or _text_ (but not if it's a list marker)
+  // Use negative lookbehind/lookahead to avoid matching isolated asterisks
+  result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+  result = result.replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>')
+  
+  // Inline code: `code`
+  result = result.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+  
+  // Links: [text](url)
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-copper-400 hover:text-copper-300 underline">$1</a>')
+  
+  return result
 }
 
 // Generate HTML for a list block
@@ -133,7 +155,7 @@ function generateListHTML(type: ListType, items: string[]): string {
   const tag = type === 'number' || type === 'letter' ? 'ol' : 'ul'
   const typeAttr = type === 'letter' ? ' type="a"' : ''
 
-  const itemsHTML = items.map((item) => `<li>${item}</li>`).join('\n')
+  const itemsHTML = items.map((item) => `<li>${processInlineMarkdown(item)}</li>`).join('\n')
 
   return `<${tag} class="${listClass}"${typeAttr}>\n${itemsHTML}\n</${tag}>`
 }
