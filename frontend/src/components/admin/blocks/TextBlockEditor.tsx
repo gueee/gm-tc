@@ -22,7 +22,7 @@ interface ListItem {
 // Detect list type from a line
 function detectListType(line: string): { type: ListType; content: string } | null {
   const trimmed = line.trimStart()
-  
+
   // Dash list: - item
   if (/^- (.+)$/.test(trimmed)) {
     return { type: 'dash', content: trimmed.slice(2) }
@@ -41,7 +41,7 @@ function detectListType(line: string): { type: ListType; content: string } | nul
     const match = trimmed.match(/^[a-z]\) (.+)$/i)
     return { type: 'letter', content: match![1] }
   }
-  
+
   return null
 }
 
@@ -58,21 +58,21 @@ function parseListBlocks(content: string): string {
   const lines = content.split('\n')
   const result: string[] = []
   let i = 0
-  
+
   while (i < lines.length) {
     const line = lines[i]
     const listInfo = detectListType(line)
-    
+
     if (listInfo && getIndentLevel(line) === 0) {
       // Start of a top-level list - collect all consecutive list items of same type
       const listType = listInfo.type
       const listItems: string[] = []
-      
+
       while (i < lines.length) {
         const currentLine = lines[i]
         const currentInfo = detectListType(currentLine)
         const indent = getIndentLevel(currentLine)
-        
+
         // Check if this line is part of the list
         if (currentInfo && indent === 0 && currentInfo.type === listType) {
           // Same type list item at root level
@@ -103,7 +103,7 @@ function parseListBlocks(content: string): string {
           break
         }
       }
-      
+
       // Generate HTML for the list
       result.push(generateListHTML(listType, listItems))
     } else {
@@ -112,7 +112,7 @@ function parseListBlocks(content: string): string {
       i++
     }
   }
-  
+
   return result.join('\n')
 }
 
@@ -132,9 +132,9 @@ function generateListHTML(type: ListType, items: string[]): string {
   const listClass = `custom-list custom-list-${type}`
   const tag = type === 'number' || type === 'letter' ? 'ol' : 'ul'
   const typeAttr = type === 'letter' ? ' type="a"' : ''
-  
+
   const itemsHTML = items.map((item) => `<li>${item}</li>`).join('\n')
-  
+
   return `<${tag} class="${listClass}"${typeAttr}>\n${itemsHTML}\n</${tag}>`
 }
 
@@ -301,7 +301,7 @@ export default function TextBlockEditor({
             </button>
 
             <div className="w-px h-4 bg-steel-600 mx-1" />
-            
+
             <span className="text-xs text-steel-500 mr-2">Other:</span>
 
             {/* Insert Table */}
