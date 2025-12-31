@@ -117,24 +117,24 @@ function getListMarker(type: ListType): string {
 // Process inline markdown (bold, italic, code, links, references) to HTML
 function processInlineMarkdown(text: string): string {
   let result = text
-  
+
   // Bold: **text** or __text__
   result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   result = result.replace(/__(.+?)__/g, '<strong>$1</strong>')
-  
+
   // Italic: *text* or _text_
   result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
   result = result.replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>')
-  
+
   // Inline code: `code`
   result = result.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-  
+
   // Links: [text](url)
   result = result.replace(/\[([^\]^\[]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-copper-400 hover:text-copper-300 underline">$1</a>')
-  
+
   // Reference markers: [^1], [^2], etc. - but not reference definitions
   result = result.replace(/\[\^(\d+)\](?!:)/g, '<sup class="reference-marker"><a href="#ref-$1" class="text-copper-400 hover:text-copper-300">[$1]</a></sup>')
-  
+
   return result
 }
 
@@ -161,7 +161,7 @@ function processReferences(content: string): { content: string; referencesHtml: 
       const processedText = processInlineMarkdown(ref.text)
       return `<div id="ref-${ref.id}" class="reference-item"><span class="reference-number">[${ref.id}]</span> ${processedText}</div>`
     }).join('\n')
-    
+
     referencesHtml = `<div class="references-section"><div class="references-title">References</div>${refItems}</div>`
   }
 

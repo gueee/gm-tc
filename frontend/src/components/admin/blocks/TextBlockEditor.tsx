@@ -175,7 +175,7 @@ function processReferences(content: string): { content: string; referencesHtml: 
       const processedText = processInlineMarkdown(ref.text)
       return `<div id="ref-${ref.id}" class="reference-item"><span class="reference-number">[${ref.id}]</span> ${processedText}</div>`
     }).join('\n')
-    
+
     referencesHtml = `<div class="references-section"><div class="references-title">References</div>${refItems}</div>`
   }
 
@@ -280,11 +280,11 @@ export default function TextBlockEditor({
 
     const start = textarea.selectionStart
     const text = block.content || ''
-    
+
     // Insert marker at cursor position
     const marker = `[^${refNum}]`
     const definition = `\n\n[^${refNum}]: `
-    
+
     const newText = text.substring(0, start) + marker + text.substring(start) + definition
     const newCursorPos = newText.length // Move cursor to end of definition
 
