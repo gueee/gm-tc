@@ -114,7 +114,7 @@ function getListMarker(type: ListType): string {
   }
 }
 
-// Process inline markdown (bold, italic, code, links) to HTML
+// Process inline markdown (bold, italic, code, links, references) to HTML
 function processInlineMarkdown(text: string): string {
   let result = text
   
@@ -130,9 +130,42 @@ function processInlineMarkdown(text: string): string {
   result = result.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
   
   // Links: [text](url)
-  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-copper-400 hover:text-copper-300 underline">$1</a>')
+  result = result.replace(/\[([^\]^\[]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-copper-400 hover:text-copper-300 underline">$1</a>')
+  
+  // Reference markers: [^1], [^2], etc. - but not reference definitions
+  result = result.replace(/\[\^(\d+)\](?!:)/g, '<sup class="reference-marker"><a href="#ref-$1" class="text-copper-400 hover:text-copper-300">[$1]</a></sup>')
   
   return result
+}
+
+// Extract reference definitions from content and return processed content + references HTML
+function processReferences(content: string): { content: string; referencesHtml: string } {
+  const lines = content.split('\n')
+  const references: { id: string; text: string }[] = []
+  const contentLines: string[] = []
+
+  for (const line of lines) {
+    // Match reference definition: [^1]: Some text here
+    const refMatch = line.match(/^\[\^(\d+)\]:\s*(.+)$/)
+    if (refMatch) {
+      references.push({ id: refMatch[1], text: refMatch[2] })
+    } else {
+      contentLines.push(line)
+    }
+  }
+
+  // Generate references HTML if there are any
+  let referencesHtml = ''
+  if (references.length > 0) {
+    const refItems = references.map(ref => {
+      const processedText = processInlineMarkdown(ref.text)
+      return `<div id="ref-${ref.id}" class="reference-item"><span class="reference-number">[${ref.id}]</span> ${processedText}</div>`
+    }).join('\n')
+    
+    referencesHtml = `<div class="references-section"><div class="references-title">References</div>${refItems}</div>`
+  }
+
+  return { content: contentLines.join('\n'), referencesHtml }
 }
 
 // Generate HTML for a list block
@@ -140,9 +173,9 @@ function generateListHTML(type: ListType, items: string[]): string {
   const listClass = `custom-list custom-list-${type}`
   const tag = type === 'number' || type === 'letter' ? 'ol' : 'ul'
   const typeAttr = type === 'letter' ? ' type="a"' : ''
-  
+
   const itemsHTML = items.map((item) => `<li>${processInlineMarkdown(item)}</li>`).join('\n')
-  
+
   return `<${tag} class="${listClass}"${typeAttr}>\n${itemsHTML}\n</${tag}>`
 }
 
@@ -255,8 +288,9 @@ function RenderBlock({ block }: { block: Block }) {
 function TextBlockView({ block }: { block: TextBlock }) {
   if (!block.content) return null
 
-  // Preprocess content to convert custom lists to HTML
-  const preprocessedContent = parseListBlocks(block.content)
+  // Preprocess content: extract references, then convert custom lists to HTML
+  const { content: contentWithoutRefs, referencesHtml } = processReferences(block.content)
+  const preprocessedContent = parseListBlocks(contentWithoutRefs) + (referencesHtml ? '\n\n' + referencesHtml : '')
 
   return (
     <div className="prose prose-invert prose-copper max-w-none">

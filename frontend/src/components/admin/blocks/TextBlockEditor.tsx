@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Eye, Edit3, ListOrdered, Table, Circle, Minus } from 'lucide-react'
+import { Eye, Edit3, ListOrdered, Table, Circle, Minus, Superscript } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
@@ -127,26 +127,59 @@ function getListMarker(type: ListType): string {
   }
 }
 
-// Process inline markdown (bold, italic, code, links) to HTML
+// Process inline markdown (bold, italic, code, links, references) to HTML
 function processInlineMarkdown(text: string): string {
   let result = text
-  
+
   // Bold: **text** or __text__
   result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   result = result.replace(/__(.+?)__/g, '<strong>$1</strong>')
-  
+
   // Italic: *text* or _text_ (but not if it's a list marker)
   // Use negative lookbehind/lookahead to avoid matching isolated asterisks
   result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
   result = result.replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>')
-  
+
   // Inline code: `code`
   result = result.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-  
+
   // Links: [text](url)
-  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-copper-400 hover:text-copper-300 underline">$1</a>')
-  
+  result = result.replace(/\[([^\]^\[]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-copper-400 hover:text-copper-300 underline">$1</a>')
+
+  // Reference markers: [^1], [^2], etc. - but not reference definitions
+  result = result.replace(/\[\^(\d+)\](?!:)/g, '<sup class="reference-marker"><a href="#ref-$1" class="text-copper-400 hover:text-copper-300">[$1]</a></sup>')
+
   return result
+}
+
+// Extract reference definitions from content and return processed content + references HTML
+function processReferences(content: string): { content: string; referencesHtml: string } {
+  const lines = content.split('\n')
+  const references: { id: string; text: string }[] = []
+  const contentLines: string[] = []
+
+  for (const line of lines) {
+    // Match reference definition: [^1]: Some text here
+    const refMatch = line.match(/^\[\^(\d+)\]:\s*(.+)$/)
+    if (refMatch) {
+      references.push({ id: refMatch[1], text: refMatch[2] })
+    } else {
+      contentLines.push(line)
+    }
+  }
+
+  // Generate references HTML if there are any
+  let referencesHtml = ''
+  if (references.length > 0) {
+    const refItems = references.map(ref => {
+      const processedText = processInlineMarkdown(ref.text)
+      return `<div id="ref-${ref.id}" class="reference-item"><span class="reference-number">[${ref.id}]</span> ${processedText}</div>`
+    }).join('\n')
+    
+    referencesHtml = `<div class="references-section"><div class="references-title">References</div>${refItems}</div>`
+  }
+
+  return { content: contentLines.join('\n'), referencesHtml }
 }
 
 // Generate HTML for a list block
@@ -227,8 +260,41 @@ export default function TextBlockEditor({
     insertAtCursor('\n' + tableTemplate + '\n')
   }
 
-  // Preprocess content to convert custom lists to HTML
-  const preprocessedContent = parseListBlocks(block.content || '')
+  // Preprocess content: extract references, then convert custom lists to HTML
+  const { content: contentWithoutRefs, referencesHtml } = processReferences(block.content || '')
+  const preprocessedContent = parseListBlocks(contentWithoutRefs) + (referencesHtml ? '\n\n' + referencesHtml : '')
+
+  // Get next reference number for the toolbar button
+  const getNextRefNumber = (): number => {
+    const content = block.content || ''
+    const matches = content.match(/\[\^(\d+)\]/g) || []
+    const numbers = matches.map(m => parseInt(m.match(/\d+/)?.[0] || '0'))
+    return numbers.length > 0 ? Math.max(...numbers) + 1 : 1
+  }
+
+  // Insert a reference marker and definition
+  const insertReference = () => {
+    const refNum = getNextRefNumber()
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const text = block.content || ''
+    
+    // Insert marker at cursor position
+    const marker = `[^${refNum}]`
+    const definition = `\n\n[^${refNum}]: `
+    
+    const newText = text.substring(0, start) + marker + text.substring(start) + definition
+    const newCursorPos = newText.length // Move cursor to end of definition
+
+    onUpdate({ ...block, content: newText })
+
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
 
   return (
     <BlockWrapper
@@ -334,6 +400,15 @@ export default function TextBlockEditor({
             >
               <Table className="w-4 h-4" />
             </button>
+
+            {/* Insert Reference */}
+            <button
+              onClick={insertReference}
+              className="p-1.5 rounded text-steel-400 hover:text-copper-400 hover:bg-steel-700 transition-colors"
+              title="Insert reference [^n]"
+            >
+              <Superscript className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Textarea */}
@@ -349,7 +424,7 @@ List examples:
 1. Numbered item
 a) Lettered item
 
-Indent with 2 spaces for sub-items or continuation."
+References: Add [^1] in text, then [^1]: Source at end"
             rows={10}
             className="w-full px-4 py-3 bg-steel-900 border border-steel-700 rounded-b-lg rounded-t-none text-white placeholder-steel-500 focus:outline-none focus:ring-2 focus:ring-copper-400 resize-y font-mono text-sm"
           />
@@ -359,6 +434,8 @@ Indent with 2 spaces for sub-items or continuation."
         <span className="text-copper-400">Lists:</span> - dash, * circle, 1. numbers, a) letters — indent with 2 spaces for sub-items
         <br />
         <span className="text-copper-400">Format:</span> **bold**, *italic*, # headings, [links](url), `code`
+        <br />
+        <span className="text-copper-400">References:</span> [^1] in text, then [^1]: source at end — renders as superscript¹
         <br />
         <span className="text-copper-400">Tables:</span> | Header | Header | with |---| separators
       </p>
