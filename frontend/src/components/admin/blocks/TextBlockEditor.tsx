@@ -97,6 +97,8 @@ export default function TextBlockEditor({
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
+              ul: ({ children }) => <ul className="list-disc list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ol>,
               table: ({ children }) => (
                 <table className="w-full border-collapse my-4">{children}</table>
               ),

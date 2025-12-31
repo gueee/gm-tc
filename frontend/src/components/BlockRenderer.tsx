@@ -125,8 +125,8 @@ function TextBlockView({ block }: { block: TextBlock }) {
               target={href?.startsWith('http') ? '_blank' : undefined}
               rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}>{children}</a>
           ),
-          ul: ({ children }) => <ul className="list-disc list-inside text-steel-300 mb-4 space-y-2">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside text-steel-300 mb-4 space-y-2">{children}</ol>,
+          ul: ({ children }) => <ul className="list-disc list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ol>,
           code: ({ className, children }) => {
             const isInline = !className
             return isInline
