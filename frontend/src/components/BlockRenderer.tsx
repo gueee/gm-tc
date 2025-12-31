@@ -1,7 +1,129 @@
 import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 import Plot from 'react-plotly.js'
+
+// Types for our custom list handling
+type ListType = 'dash' | 'circle' | 'number' | 'letter'
+
+// Detect list type from a line
+function detectListType(line: string): { type: ListType; content: string } | null {
+  const trimmed = line.trimStart()
+  
+  // Dash list: - item
+  if (/^- (.+)$/.test(trimmed)) {
+    return { type: 'dash', content: trimmed.slice(2) }
+  }
+  // Circle list: * item
+  if (/^\* (.+)$/.test(trimmed)) {
+    return { type: 'circle', content: trimmed.slice(2) }
+  }
+  // Numbered list: 1. item, 2. item, etc.
+  if (/^\d+\. (.+)$/.test(trimmed)) {
+    const match = trimmed.match(/^\d+\. (.+)$/)
+    return { type: 'number', content: match![1] }
+  }
+  // Lettered list: a) item, b) item, etc.
+  if (/^[a-z]\) (.+)$/i.test(trimmed)) {
+    const match = trimmed.match(/^[a-z]\) (.+)$/i)
+    return { type: 'letter', content: match![1] }
+  }
+  
+  return null
+}
+
+// Get indent level (number of leading spaces / 2 or tabs)
+function getIndentLevel(line: string): number {
+  const match = line.match(/^(\s*)/)
+  if (!match) return 0
+  const spaces = match[1].replace(/\t/g, '  ').length
+  return Math.floor(spaces / 2)
+}
+
+// Parse content into list blocks and regular text
+function parseListBlocks(content: string): string {
+  const lines = content.split('\n')
+  const result: string[] = []
+  let i = 0
+  
+  while (i < lines.length) {
+    const line = lines[i]
+    const listInfo = detectListType(line)
+    
+    if (listInfo && getIndentLevel(line) === 0) {
+      // Start of a top-level list - collect all consecutive list items of same type
+      const listType = listInfo.type
+      const listItems: string[] = []
+      
+      while (i < lines.length) {
+        const currentLine = lines[i]
+        const currentInfo = detectListType(currentLine)
+        const indent = getIndentLevel(currentLine)
+        
+        // Check if this line is part of the list
+        if (currentInfo && indent === 0 && currentInfo.type === listType) {
+          // Same type list item at root level
+          listItems.push(currentInfo.content)
+          i++
+        } else if (indent > 0 && listItems.length > 0) {
+          // Indented content - append to last item
+          if (currentInfo) {
+            // Nested list item
+            listItems[listItems.length - 1] += `<br/>&nbsp;&nbsp;${getListMarker(currentInfo.type)} ${currentInfo.content}`
+          } else if (currentLine.trim()) {
+            // Continuation text
+            listItems[listItems.length - 1] += `<br/>&nbsp;&nbsp;${currentLine.trim()}`
+          }
+          i++
+        } else if (!currentLine.trim() && i + 1 < lines.length) {
+          // Empty line - check if next line continues the list
+          const nextLine = lines[i + 1]
+          const nextInfo = detectListType(nextLine)
+          if (nextInfo && getIndentLevel(nextLine) === 0 && nextInfo.type === listType) {
+            i++
+            continue
+          } else {
+            break
+          }
+        } else {
+          break
+        }
+      }
+      
+      // Generate HTML for the list
+      result.push(generateListHTML(listType, listItems))
+    } else {
+      // Regular line, pass through
+      result.push(line)
+      i++
+    }
+  }
+  
+  return result.join('\n')
+}
+
+// Get the marker character for display
+function getListMarker(type: ListType): string {
+  switch (type) {
+    case 'dash': return '–'
+    case 'circle': return '○'
+    case 'number': return '•'
+    case 'letter': return '•'
+    default: return '•'
+  }
+}
+
+// Generate HTML for a list block
+function generateListHTML(type: ListType, items: string[]): string {
+  const listClass = `custom-list custom-list-${type}`
+  const tag = type === 'number' || type === 'letter' ? 'ol' : 'ul'
+  const typeAttr = type === 'letter' ? ' type="a"' : ''
+  
+  const itemsHTML = items.map((item) => `<li>${item}</li>`).join('\n')
+  
+  return `<${tag} class="${listClass}"${typeAttr}>\n${itemsHTML}\n</${tag}>`
+}
 
 // Block types (matching admin blocks types)
 type BlockType = 'text' | 'chart' | 'image' | 'gallery' | 'code' | 'table'
@@ -108,13 +230,18 @@ function RenderBlock({ block }: { block: Block }) {
   }
 }
 
-// Text block - renders markdown with GFM table support
+// Text block - renders markdown with GFM table support and custom list styles
 function TextBlockView({ block }: { block: TextBlock }) {
   if (!block.content) return null
+
+  // Preprocess content to convert custom lists to HTML
+  const preprocessedContent = parseListBlocks(block.content)
+
   return (
     <div className="prose prose-invert prose-copper max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           h1: ({ children }) => <h1 className="text-3xl font-bold text-white mt-10 mb-4">{children}</h1>,
           h2: ({ children }) => <h2 className="text-2xl font-bold text-white mt-8 mb-4">{children}</h2>,
@@ -125,9 +252,6 @@ function TextBlockView({ block }: { block: TextBlock }) {
               target={href?.startsWith('http') ? '_blank' : undefined}
               rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}>{children}</a>
           ),
-          ul: ({ children }) => <ul className="list-disc list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ol>,
-          li: ({ children }) => <li className="pl-1">{children}</li>,
           code: ({ className, children }) => {
             const isInline = !className
             return isInline
@@ -160,7 +284,7 @@ function TextBlockView({ block }: { block: TextBlock }) {
           ),
         }}
       >
-        {block.content}
+        {preprocessedContent}
       </ReactMarkdown>
     </div>
   )

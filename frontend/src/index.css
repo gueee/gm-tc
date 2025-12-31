@@ -70,3 +70,43 @@ a {
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
+
+/* Custom list styles for the text block editor */
+.custom-list {
+  @apply text-steel-300 mb-4 space-y-2 pl-6;
+  list-style-position: outside;
+}
+
+.custom-list li {
+  @apply pl-1;
+}
+
+/* Dash list: — */
+.custom-list-dash {
+  list-style-type: none;
+}
+
+.custom-list-dash > li::before {
+  content: '–';
+  @apply text-copper-400 font-bold mr-2 -ml-4 inline-block w-3;
+}
+
+/* Circle list: ○ */
+.custom-list-circle {
+  list-style-type: circle;
+}
+
+/* Numbered list: 1. 2. 3. */
+.custom-list-number {
+  list-style-type: decimal;
+}
+
+/* Lettered list: a. b. c. */
+.custom-list-letter {
+  list-style-type: lower-alpha;
+}
+
+/* Nested list support */
+.custom-list .custom-list {
+  @apply mt-2 mb-0;
+}

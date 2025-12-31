@@ -1,0 +1,164 @@
+CAN in 3D printing
+How CAN in 3D printing fails to meet the requirements
+
+Friday, December 19, 2025
+44 views
+How Your Printer Got Away With It
+You know that feeling when something works perfectly for years, and then you finally look under the hood and realize it should have failed about five different ways? That's CAN bus in 3D printing.
+
+Your printer's been humming along flawlessly, toolheads chattering away on CAN, zero dropouts, rock-solid communication. You're riding high. Then you read the spec sheet for industrial CAN systems and realize... you've been building with hope and luck this whole time.
+
+Here's the uncomfortable truth: 3D printer CAN implementations violate nearly every formal requirement in ISO 11898-2. Not in small ways. In big, fundamental ways. And the only reason your printer doesn't suffer random frame corruption, mysterious stalls, and lost Z-height is because you're running it in the electromagnetic equivalent of a monastery.
+
+Let's talk about why.
+
+What CAN is supposed to be
+CAN bus was designed for vehicles and industrial control systems where reliability matters. It's a real-time protocol meant to survive harsh environments: factory floors with spindle noise, automotive vibration, temperature swings, power supply transients, EMI from welders and servo drives.
+
+To handle that, there are formal specifications. ISO 11898-2 defines every detail: cable gauge, twist pitch, shielding requirements, connector types, termination values, EMC immunity levels. These aren't suggestions. They're the engineering that separates "probably works" from "definitely works."
+
+3D printers? 3D printers said "nah, we're good with whatever."
+
+The cable situation
+Industrial CAN requires 0.34mm² minimum conductor, twisted-pair, 85% shielded, 120Ω impedance-controlled, maximum length depends on baud rate but typically 40–130 meters at 500kbps.
+
+Your 3D printer uses 24AWG (0.2mm²) unshielded twisted pair, often from whatever bulk spool someone found cheap, 1–2 meters long, no impedance spec, no testing.
+
+Why does it work? Because 1–2 meters is short enough that reflections don't matter. The cable's impedance might be wildly off, but over such short distances, the wave hasn't even had time to care. It's like designing a suspension system by saying "well, potholes don't matter if you only drive 10 feet."
+
+Where it breaks: Run a CAN line 5+ meters through a factory with three VFDs and a spot welder, and suddenly that unshielded wire is a radio antenna picking up every transient on the plant floor. Your signal looks like garbage on the oscilloscope. Frames corrupt. Nodes drop offline. You think the firmware crashed; actually, the wiring is just terrible.
+
+The connector comedy
+Industrial CAN specifies keyed, sealed connectors (D-Sub, M12 circular, or screw terminals), IP67 rated, 10,000+ mating cycles, with gold-plated contacts.
+
+3D printers use JST XH or PH connectors—hobby-grade, unsealed, unkeyed, good for maybe 100–500 mating cycles before creep, tin-plated contacts that corrode if you breathe on them wrong.
+
+The upside: JST connectors are cheap. Cheerfully, undeniably cheap.
+
+The downside: They were designed for breadboards, not production systems. A humidity spike? Corrosion starts within weeks. Vibration from a stepper motor? The connector works loose. A user yanks the cable at the wrong angle? It disconnects.
+
+In a workshop? You never notice. You plug it in once, it works forever. In a factory where cables get moved, adjusted, handled, exposed to coolant mist? Three months in, you've got intermittent connectivity that drives the maintenance team insane because the failure is so subtle it looks like firmware bugs.
+
+The termination rabbit hole
+Industrial CAN requires 120Ω termination resistors at both ends of the bus—not optional, not negotiable.
+
+3D printers? Many don't have termination at all. Some have random pop-up resistors soldered to the board in no particular topology. Some boards claim 120Ω but it's unclear if they're actually doing the job.
+
+Here's why it matters: CAN is a differential bus. When you switch a signal, it travels down the cable as a wave. At high frequencies (and CAN speeds are surprisingly high), if the wire doesn't end with a matched impedance, the wave reflects back like an echo. That reflection interferes with the next bit. Errors accumulate.
+
+At 250kbps over 2 meters? The reflection is so small it doesn't matter. The signal is already well past the receiver before the echo comes back.
+
+At 1Mbps over 50 meters with improper termination? You get oscillation, overshoot, signal degradation. Frames start dropping. Then they drop more. Then your system becomes unreliable.
+
+Why 3D printers tolerate it: They operate at low baud rates (250–1000kbps typical) over short distances. The wave hasn't had time to misbehave before the bit's already been received. Luck engineering at its finest.
+
+Grounding -> the silent killer
+Industrial CAN demands star-point grounding, shielded cables with grounding at one or both ends, multilayer PCBs with proper return paths, strategic decoupling.
+
+3D printers? Single-layer PCB. Ground traces that probably cross power planes. Maybe a ground pour, maybe not. Cables that aren't shielded, so there's no shield to ground anyway. Return paths that are... wherever the layout happened to put them.
+
+This is the one that sneaks up on you. Everything works fine until you add a 24V power supply in the same enclosure. Or run a stepper motor next to the CAN cable. Or add a relay that's switching a few amps. Suddenly, ground loops inject noise into your signal. A transient spike from a MOSFET switching edges couples into the CAN line through parasitic capacitance. Your node resets. Your print fails.
+
+In your quiet workshop, it's not a problem. In an industrial environment with multiple power supplies, high-current stepper drives, and EMI everywhere? You're toast.
+
+EMC -> the elephant in the room
+Industrial CAN systems are tested to IEC 61000-6-2: 10V/m radiated immunity, 10A conducted immunity, ±8kV ESD protection, 2kV burst immunity.
+
+3D printers: Not tested. At all. You build it, you plug it in, you hope.
+
+This is where 3D printer CAN and industrial CAN diverge most dramatically. Industrial systems have to survive in hostile electromagnetic environments. They're tested, certified, and engineered to reject noise. 3D printers are tested by... running your first print and seeing if it works.
+
+If something goes wrong, you troubleshoot it ad-hoc. If it fails during a print, you blame the firmware, re-flash, and try again. If it keeps failing, you redesign the circuit by trial and error. This is crowdsourced QA, not engineering.
+
+How we get away with terrible engineering
+So if 3D printer CAN violates nearly every spec, why is it so reliable?
+
+Three reasons:
+
+Benign environment. Benchtop hobby workshops are electromagnetically quiet. A 3D printer motor and heating bed are noisy by hobby standards, but they're silent compared to a factory floor with spindle drives and servo motors.
+
+Short cables. 1–2 meters is the magic number. At this distance, even at 1Mbps (which modern toolboards run), reflections and propagation delay don't have time to cause problems. A wave hasn't bounced back before the bit's already been received. Impedance matching? Doesn't matter yet.
+
+Resilient protocol. CAN has excellent error detection. If a frame gets corrupted, the protocol detects it and retries. For a 3D print, a single retry is invisible. The system self-heals.
+
+Here's the thing though: you're running 1Mbps, which is industrial speed, over hobbyist cables, with zero impedance control, across short enough distances that the physics doesn't punish you yet. It's like driving 100mph on a potholed road—it works because you haven't hit a pothole deep enough to matter.
+
+Combine those three factors and you get a system that's inexplicably reliable despite being engineered by luck.
+
+Where it fails
+now imagine you scale your printer. You want to run CAN across a 10-meter cable run at 1Mbps. Or you're building that lathe controller and it'll live in a workshop with other equipment. Or you want to expand to multiple printers networked together.
+
+Suddenly:
+
+At 1Mbps, reflections start mattering. Missing termination causes signal ringing that corrupts bits.
+Longer cable runs pick up EMI. Unshielded twisted pair becomes an antenna for workshop noise.
+Ground loops form. Poor grounding creates transient spikes that reset nodes.
+The system becomes intermittently unreliable, and you can't figure out why because it works fine in isolation.
+This is where "good enough for hobby" becomes "not good enough for production."
+
+The insdustrial standard (and why it even exists)
+now imagine you scale your printer. You want to run CAN across a 10-meter cable run at 1Mbps. Or you're building that lathe controller and it'll live in a workshop with other equipment. Or you want to expand to multiple printers networked together.
+
+Suddenly:
+
+At 1Mbps, reflections start mattering. Missing termination causes signal ringing that corrupts bits.
+Longer cable runs pick up EMI. Unshielded twisted pair becomes an antenna for workshop noise.
+Ground loops form. Poor grounding creates transient spikes that reset nodes.
+The system becomes intermittently unreliable, and you can't figure out why because it works fine in isolation.
+This is where "good enough for hobby" becomes "not good enough for production."
+
+Cable requirements
+Cable-Requirements
+Connector Requirements
+Connector-Requirements
+Termination Grounding
+Termination-Grounding
+The hidden cost of cheap
+Here's the dirty secret: 3D printer CAN is cheaper to implement. That's literally it.
+
+Cost. JST connectors are $0.30. D-Sub keyed connectors are $5+. Shielded twisted-pair cable costs 3x as much. You save maybe $2 per toolhead board.
+
+Simplicity. You can wire it up in an afternoon. No design review needed. No grounding topology. No impedance matching. Just plug and pray.
+
+Accessibility. Every maker has JST connectors in a drawer. D-Sub connectors and proper CAN cable? Requires a supplier and a design choice.
+
+And the cost of those savings? Random frame corruption. Mysterious stalls. Prints that fail at layer 50 for no reason. Connection drops that you can't reproduce. Intermittent bugs that no amount of firmware flashing fixes.
+
+The industry normalized these failures. You blame the firmware. You blame the board design. You assume CAN "just works" until the day it doesn't. And when it doesn't, you add another workaround, another hack, another layer of code to mask the signal integrity problem that was always there.
+
+For a hobbyist with one printer in a quiet workshop? You might never see it. You're lucky.
+
+For anyone scaling up, adding more toolheads, running in a factory with other equipment, or expecting reliability? You're not getting it. You're getting a ticking time bomb that will fail in ways you can't debug.
+
+An engineer would say: you need the spec because the spec is the difference between "works sometimes" and "works reliably."
+
+And then you decide to build a lathe controller
+If you're scaling up from printers to an industrial CAN system (like your lathe controller), here's what changes:
+
+Get proper cable: Shielded twisted-pair, 0.34mm² minimum, specify impedance. Cost: $1–2 per meter instead of $0.20.
+
+Use real connectors: D-Sub or M12 with keying. Cost: $5–10 per connector instead of $0.30.
+
+Add termination: Proper 120Ω resistors at actual bus endpoints, not random resistor packs on boards. Cost: $1 and a design review.
+
+Ground it properly: Star-point grounding, multilayer PCB if possible, shield the cables and ground them at one end. Cost: Layout time, not money.
+
+Test it: Measure with an oscilloscope. Verify signal integrity. Make sure you're not getting reflections or ringing. Cost: An afternoon with test equipment.
+
+Total incremental cost? Maybe $50 for a small system. Maybe $200 for a larger one. Trivial compared to the cost of intermittent failures that you can't reproduce, diagnose, or fix.
+
+The standards (for when you need them)
+When you're spec'ing proper CAN, these are the documents you need:
+
+ISO 11898-1:2015 – CAN Protocol Specification (the format and how it works) ISO 11898-2:2016 – High-Speed CAN Physical Layer (cables, connectors, electrical) ISO 16845 – CAN Conformance Testing (how to verify your system actually works) IEC 61000-6-2 – Industrial EMC Immunity (what interference levels you need to survive) IEC 60529 – IP Ratings (what "sealed" actually means) IEC 61076-2-109 – Circular Connectors (M12 connector spec)
+
+You don't need to memorize these. But if you're building something that needs to work reliably in a non-ideal environment, these are your reference.
+
+So here's the thing ....
+Your 3D printer CAN works brilliantly because you've built a system that exploits the margins. Short runs, low interference, forgiving protocol, benign environment. It's a masterclass in "good enough."
+
+But "good enough for my hobby" and "meets the spec" are different things. If you're expanding to industrial applications—lathes, multi-printer networks, harsh environments—you need to cross that bridge from "works" to "verified working."
+
+The good news? The spec isn't hard. It's not expensive. It's just specified. Cable choice. Connector choice. Grounding discipline. A few resistors. An oscilloscope session.
+
+Everything your printer already does well, just... properly.
