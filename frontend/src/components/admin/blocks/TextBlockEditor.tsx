@@ -260,9 +260,15 @@ export default function TextBlockEditor({
     insertAtCursor('\n' + tableTemplate + '\n')
   }
 
-  // Preprocess content: extract references, then convert custom lists to HTML
+  // Preprocess content: extract references, convert custom lists to HTML, then process remaining reference markers
   const { content: contentWithoutRefs, referencesHtml } = processReferences(block.content || '')
-  const preprocessedContent = parseListBlocks(contentWithoutRefs) + (referencesHtml ? '\n\n' + referencesHtml : '')
+  const listProcessedContent = parseListBlocks(contentWithoutRefs)
+  // Process any remaining reference markers [^n] that aren't inside list items
+  const contentWithRefMarkers = listProcessedContent.replace(
+    /\[\^(\d+)\](?!:)/g, 
+    '<sup class="reference-marker"><a href="#ref-$1" class="text-copper-400 hover:text-copper-300">[$1]</a></sup>'
+  )
+  const preprocessedContent = contentWithRefMarkers + (referencesHtml ? '\n\n' + referencesHtml : '')
 
   // Get next reference number for the toolbar button
   const getNextRefNumber = (): number => {
