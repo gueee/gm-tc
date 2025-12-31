@@ -127,6 +127,7 @@ function TextBlockView({ block }: { block: TextBlock }) {
           ),
           ul: ({ children }) => <ul className="list-disc list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ul>,
           ol: ({ children }) => <ol className="list-decimal list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ol>,
+          li: ({ children }) => <li className="pl-1">{children}</li>,
           code: ({ className, children }) => {
             const isInline = !className
             return isInline

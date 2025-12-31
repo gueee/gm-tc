@@ -99,6 +99,7 @@ export default function TextBlockEditor({
             components={{
               ul: ({ children }) => <ul className="list-disc list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ul>,
               ol: ({ children }) => <ol className="list-decimal list-outside text-steel-300 mb-4 space-y-2 pl-6">{children}</ol>,
+              li: ({ children }) => <li className="pl-1">{children}</li>,
               table: ({ children }) => (
                 <table className="w-full border-collapse my-4">{children}</table>
               ),
