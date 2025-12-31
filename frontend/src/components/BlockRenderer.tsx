@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import Plot from 'react-plotly.js'
 
 // Block types (matching admin blocks types)
@@ -107,12 +108,13 @@ function RenderBlock({ block }: { block: Block }) {
   }
 }
 
-// Text block - renders markdown
+// Text block - renders markdown with GFM table support
 function TextBlockView({ block }: { block: TextBlock }) {
   if (!block.content) return null
   return (
     <div className="prose prose-invert prose-copper max-w-none">
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => <h1 className="text-3xl font-bold text-white mt-10 mb-4">{children}</h1>,
           h2: ({ children }) => <h2 className="text-2xl font-bold text-white mt-8 mb-4">{children}</h2>,
@@ -133,6 +135,28 @@ function TextBlockView({ block }: { block: TextBlock }) {
           },
           pre: ({ children }) => <pre className="bg-steel-800 rounded-lg p-4 overflow-x-auto mb-4">{children}</pre>,
           blockquote: ({ children }) => <blockquote className="border-l-4 border-copper-400 pl-4 italic text-steel-400 my-4">{children}</blockquote>,
+          // Table components for GFM tables
+          table: ({ children }) => (
+            <div className="my-6 overflow-x-auto">
+              <table className="w-full border-collapse">{children}</table>
+            </div>
+          ),
+          thead: ({ children }) => (
+            <thead className="bg-steel-800 border-b-2 border-copper-400/30">{children}</thead>
+          ),
+          th: ({ children }) => (
+            <th className="px-4 py-3 text-left text-sm font-semibold text-copper-400 border border-steel-700">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="px-4 py-3 text-sm text-steel-300 border border-steel-700">
+              {children}
+            </td>
+          ),
+          tr: ({ children }) => (
+            <tr className="border-b border-steel-700/50 hover:bg-steel-800/50 transition-colors">{children}</tr>
+          ),
         }}
       >
         {block.content}
